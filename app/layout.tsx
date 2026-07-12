@@ -2,20 +2,20 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 /**
- * LAYOUT — Roda da Sorte Visit Braga (feiras internacionais)
+ * LAYOUT - Roda da Sorte Visit Braga (feiras internacionais)
  * Tipografia: Archivo Black (display) + Inter (corpo).
  * Favicon: app/icon.png (sino oficial da marca).
  *
- * NOTA: o viewport e o theme-color são declarados como <meta> à mão,
- * em vez do export `viewport` tipado. Esse export só existe a partir do
- * Next 14 e o template do StackBlitz usa uma versão anterior — assim a
- * app compila em qualquer versão.
+ * NOTA: o viewport e o theme-color são declarados como <meta> à mão, em
+ * vez do export `viewport` tipado. Esse export só existe a partir do Next
+ * 14 e o template do StackBlitz usa uma versão anterior - assim a app
+ * compila em qualquer versão.
  */
 
 export const metadata: Metadata = {
-  title: "Visit Braga — Roda da Sorte · Rueda de la Suerte · Wheel of Fortune",
+  title: "Visit Braga - Roda da Sorte · Rueda de la Suerte · Wheel of Fortune",
   description:
-    "Gira e ganha no stand Visit Braga — a cidade mais antiga de Portugal.",
+    "Gira e ganha no stand Visit Braga - a cidade mais antiga de Portugal.",
   manifest: "/manifest.json",
 };
 

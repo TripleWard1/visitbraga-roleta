@@ -49,9 +49,10 @@ body {
 body {
   font-family: var(--corpo);
   color: var(--preto);
-  /* luz de estúdio topo-esquerda: canto superior esquerdo mais claro */
+  /* PAREDE do palco: um plano com luz vinda de cima-esquerda e os cantos
+     a fechar. Deixa de ser um gradiente decorativo e passa a ser espaço. */
   background:
-    radial-gradient(130% 100% at 38% 22%, #fffdf9 0%, var(--fundo) 52%, #efe9de 100%);
+    radial-gradient(120% 85% at 36% 8%, #fffefb 0%, #f7f2e9 46%, #ece5d8 100%);
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
@@ -106,12 +107,56 @@ img {
    Nada é `fixed`, logo nada tapa nada - em qualquer formato. */
 .pagina {
   position: relative;
+  /* altura EXATA do ecrã: o grid não pode crescer, e por isso nada é
+     cortado pelo overflow. A roda adapta-se ao espaço que sobra. */
+  height: 100dvh;
   min-height: 100dvh;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   justify-items: center;
   padding: var(--e2) var(--e2) 0;
   overflow: hidden;
+  isolation: isolate;
+}
+
+/* CHÃO: um plano em perspetiva, mais quente e mais escuro que a parede.
+   O encontro entre os dois cria um HORIZONTE - é isto que dá espaço à
+   cena e faz a roda e o Bracvs assentarem em vez de flutuarem no nada. */
+.pagina::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 34%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    /* sombra do encontro parede/chão */
+    linear-gradient(180deg, rgba(120, 96, 66, 0.16) 0%, transparent 14%),
+    /* o plano do chão, a escurecer para a frente */
+    linear-gradient(180deg, #f0eadd 0%, #e6dece 55%, #ddd3c0 100%);
+}
+
+/* LUZ DE PROJETOR sobre a roda: um cone suave que a destaca do fundo.
+   É a razão pela qual, num palco, o objeto principal se lê de longe. */
+.pagina::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -8%;
+  width: min(150vh, 1300px);
+  height: 118%;
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+  /* mais contida: só realça a zona da roda, já não apaga o pórtico */
+  background: radial-gradient(
+    38% 32% at 50% 40%,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 253, 246, 0.22) 45%,
+    rgba(255, 250, 240, 0) 72%
+  );
 }
 
 .cabecalho {
@@ -194,10 +239,11 @@ img {
   justify-content: center;
   width: 100%;
   min-height: 0;
-  /* tamanho da roda num só sítio: media queries só redefinem isto.
-     Limitado pela ALTURA disponível do palco (não do ecrã), para a roda
-     nunca empurrar os selos nem o rodapé. */
-  --roda: min(92vw, 56vh, 620px);
+  /* TAMANHO DA RODA - a regra de ouro deste ecrã.
+     Não se mede contra o ecrã (era esse o bug: a roda empurrava o plinto
+     para fora e o overflow comia-o). Mede-se contra o que SOBRA depois do
+     cabeçalho (~130px), da zona do botão (~120px) e do plinto (~90px). */
+  --roda: min(92vw, calc(100dvh - 350px), 620px);
 }
 
 /* A ROLETA É A PROTAGONISTA */
@@ -233,23 +279,26 @@ img {
   filter: drop-shadow(2px 3px 4px rgba(26, 26, 28, 0.1));
 }
 
-/* sombra própria no chão: elipse contida sob a roda (luz topo-esquerda) */
+/* SOMBRA PROJETADA no chão do palco: elipse achatada, deslocada para a
+   direita (a luz vem de cima-esquerda) e a esbater-se com a distância.
+   É o que faz a roda parecer POUSADA em vez de colada ao fundo. */
 .roda-envolvente::after {
   content: "";
   position: absolute;
-  left: 16%;
-  right: 12%;
-  bottom: -1.5%;
-  height: 4.5%;
+  left: 6%;
+  right: -2%;
+  bottom: -4%;
+  height: 9%;
   border-radius: 50%;
   background: radial-gradient(
-    ellipse at 50% 50%,
-    rgba(96, 12, 10, 0.22) 0%,
-    rgba(26, 26, 28, 0.07) 55%,
-    transparent 76%
+    ellipse at 46% 45%,
+    rgba(74, 52, 30, 0.34) 0%,
+    rgba(74, 52, 30, 0.16) 42%,
+    rgba(74, 52, 30, 0.05) 66%,
+    transparent 78%
   );
-  filter: blur(9px);
-  z-index: 0;
+  filter: blur(14px);
+  z-index: -1;
   pointer-events: none;
 }
 
@@ -380,19 +429,20 @@ img {
 /* sombra de contacto: núcleo escuro sob os pés, a desvanecer depressa */
 .bracvs-sombra {
   position: absolute;
-  left: 50%;
-  bottom: -4px;
+  left: 54%;
+  bottom: -5px;
   transform: translateX(-50%);
-  width: 56%;
-  height: 11px;
+  width: 68%;
+  height: 13px;
   border-radius: 50%;
+  /* mesma luz, mesmo chão: sombra deslocada para a direita e a esbater */
   background: radial-gradient(
-    ellipse at 48% 45%,
-    rgba(26, 26, 28, 0.42) 0%,
-    rgba(26, 26, 28, 0.12) 46%,
-    transparent 70%
+    ellipse at 44% 44%,
+    rgba(74, 52, 30, 0.46) 0%,
+    rgba(74, 52, 30, 0.18) 44%,
+    transparent 72%
   );
-  filter: blur(4px);
+  filter: blur(5px);
   animation: sombraRespira 3.4s var(--ease-suave) infinite;
 }
 
@@ -566,16 +616,18 @@ img {
 /* ---------------------- faixa de selos ----------------------------- */
 
 /* prova de destino: linha própria da grelha (nunca tapada) */
+/* selos dentro do plinto: a branco sobre o vermelho da marca */
 .faixa-selos {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: clamp(var(--e2), 3.5vw, var(--e5));
+  gap: clamp(12px, 2.4vw, var(--e4));
   flex-wrap: wrap;
-  width: 100%;
-  max-width: 940px;
-  padding: var(--e2) var(--e2);
+  padding: 0;
+  min-width: 0;
 }
+
+.selo { min-width: 0; }
+.selo-texto { min-width: 0; }
 
 .selo {
   display: flex;
@@ -591,9 +643,9 @@ img {
 }
 
 .selo-sino {
-  height: 20px;
+  height: 19px;
   width: auto;
-  color: var(--vermelho-superficie);
+  color: rgba(255, 255, 255, 0.9);
   flex: none;
 }
 
@@ -606,16 +658,23 @@ img {
 .selo-forte {
   font-weight: 800;
   font-size: clamp(0.76rem, 1.9vmin, 0.9rem);
-  color: var(--preto);
+  color: #ffffff;
   letter-spacing: 0.01em;
 }
 
 .selo-leve {
   font-weight: 600;
-  font-size: clamp(0.66rem, 1.6vmin, 0.76rem);
-  letter-spacing: 0.06em;
+  font-size: clamp(0.64rem, 1.5vmin, 0.74rem);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--texto-suave);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* filete separador entre selos, sobre o vermelho */
+.selo + .selo {
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  padding-left: clamp(var(--e2), 3vw, var(--e4));
+  margin-left: 0;
 }
 
 /* -------------------- base zigzag e contador ----------------------- */
@@ -623,15 +682,21 @@ img {
 /* RODAPÉ: linha da grelha (não é `fixed`) - reserva o seu espaço,
    por isso nunca corta os selos nem a mascote. O zigzag do escadório
    vive no topo dele, com hairline branca a rimar com o cabeçalho. */
+/* BASE DO PALCO: um plinto vermelho onde a cena assenta. Leva os selos
+   institucionais lá dentro (a branco sobre vermelho) e o contador - por
+   isso deixa de ser "mais uma fita" e passa a ancorar a composição. */
 .rodape {
   position: relative;
+  z-index: 3;
   width: 100vw;
-  margin-top: var(--e1);
+  margin-top: var(--e2);
+  flex: none;
+  box-shadow: 0 -14px 34px rgba(120, 40, 20, 0.14);
 }
 
 .rodape-zig {
   position: relative;
-  height: 14px;
+  height: 11px;
   background: linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
   clip-path: polygon(
     0 12px, 2.08% 0, 4.17% 12px, 6.25% 0, 8.33% 12px, 10.42% 0,
@@ -649,10 +714,13 @@ img {
 .rodape-conteudo {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  min-height: clamp(38px, 5.5vh, 58px);
-  padding: 0 clamp(var(--e2), 2.5vw, var(--e5));
-  background: linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
+  justify-content: space-between;
+  gap: var(--e2) var(--e3);
+  flex-wrap: wrap;
+  padding: clamp(12px, 1.6vh, 18px) clamp(var(--e2), 3vw, var(--e5));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, transparent 34%),
+    linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
 }
 
 /* hairline branca no zigzag do rodapé: rima com o divisor do cabeçalho */
@@ -679,13 +747,32 @@ img {
 }
 
 .contador-premios {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   font-weight: 700;
-  font-size: clamp(0.8rem, 1.9vmin, 0.98rem);
-  color: var(--vermelho-escuro);
-  background: var(--branco);
+  font-size: clamp(0.78rem, 1.8vmin, 0.94rem);
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 999px;
   padding: 9px 18px;
-  box-shadow: 1px 3px 10px rgba(120, 0, 6, 0.28);
+  white-space: nowrap;
+}
+
+.contador-premios::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  animation: contadorPulsa 2.4s var(--ease-suave) infinite;
+}
+
+@keyframes contadorPulsa {
+  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
+  70%, 100% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
 }
 
 /* ------------------------ véu de sobreposição ---------------------- */
@@ -1415,7 +1502,7 @@ img {
 
 /* --- 1. DESKTOP / MONITOR GRANDE DE STAND --- */
 @media (min-width: 1280px) and (min-height: 800px) {
-  .palco { --roda: min(62vh, 660px); }
+  .palco { --roda: min(calc(100dvh - 360px), 660px); }
 }
 
 /* --- 2. TABLET HORIZONTAL (paisagem): roda + botão lado a lado --- */
@@ -1426,7 +1513,7 @@ img {
   .cabecalho-zig { margin-top: 6px; width: 104px; }
 
   .palco {
-    --roda: min(46vw, 66vh, 560px);
+    --roda: min(46vw, calc(100dvh - 200px), 560px);
     flex-direction: row;
     gap: clamp(var(--e3), 4vw, var(--e5));
   }
@@ -1449,7 +1536,7 @@ img {
 @media (orientation: landscape) and (max-height: 560px) {
   .faixa-selos { display: none; }
   .bracvs-poiso { display: none; }
-  .palco { --roda: min(44vw, 74vh, 460px); }
+  .palco { --roda: min(44vw, calc(100dvh - 150px), 460px); }
 }
 
 /* --- 3. TABLET / TELEMÓVEL VERTICAL (retrato) --- */
@@ -1462,7 +1549,7 @@ img {
     box-shadow: 1px 2px 8px rgba(26, 26, 28, 0.07);
   }
 
-  .palco { --roda: min(92vw, 52vh, 560px); }
+  .palco { --roda: min(92vw, calc(100dvh - 430px), 560px); }
 
   /* mascote pequena, encostada ao pé da roda, SEMPRE inteira */
   .bracvs-poiso { left: -6%; bottom: 0; }

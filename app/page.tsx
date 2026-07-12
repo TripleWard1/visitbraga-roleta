@@ -83,6 +83,7 @@ export default function Pagina() {
 
   return (
     <main className="pagina">
+
       <header className="cabecalho">
         <img
           src="/logo-claro.png"
@@ -99,15 +100,13 @@ export default function Pagina() {
 
       <Roleta idioma={idioma} montra={montra} onOcupadaChange={aoOcupadaChange} />
 
-      {/* faixa institucional: prova de destino a quem só veio pelo prémio */}
-      {MOSTRAR_SELOS ? <FaixaSelos idioma={idioma} /> : null}
-
-      {/* RODAPÉ: a base zigzag deixou de ser um elemento fixo a flutuar
-          por cima de tudo - é uma LINHA da grelha, com o contador dentro.
-          Assim reserva o seu espaço e nunca tapa os selos nem a mascote. */}
+      {/* BASE DO PALCO: o rodapé deixou de ser uma fita decorativa. É o
+          plinto onde a cena assenta, e leva lá dentro a prova institucional
+          (selos, a branco sobre vermelho) e o contador de entregas. */}
       <footer className="rodape">
         <div className="rodape-zig" aria-hidden="true" />
         <div className="rodape-conteudo">
+          {MOSTRAR_SELOS ? <FaixaSelos idioma={idioma} /> : null}
           <ContadorPremios idioma={idioma} />
         </div>
       </footer>
