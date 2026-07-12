@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * MODO MONTRA — "VERMELHO TOTAL", com fotografia do destino
+ * MODO MONTRA - "VERMELHO TOTAL", com fotografia do destino
  * ----------------------------------------------------------
  * Após ~45 s de inatividade, o ecrã inteiro passa a farol vermelho: o
  * sino oficial badala, o CTA alterna nas 3 línguas e o fundo é um
@@ -12,7 +12,7 @@
  * - só entra em modo fotografia quando pelo menos uma foto CARREGOU
  *   mesmo (nada de ecrã meio vazio à espera da rede)
  * - se uma foto falhar, é saltada; se falharem todas (wi-fi em baixo),
- *   volta sozinha à versão gráfica de raios — o stand nunca mostra um
+ *   volta sozinha à versão gráfica de raios - o stand nunca mostra um
  *   ícone de imagem partida
  * - o slideshow só avança entre fotos que carregaram
  */
@@ -68,7 +68,7 @@ export default function ModoMontra({ idioma }: { idioma: Idioma }) {
   return (
     <div className="montra-veu" aria-hidden="true">
       {/* as imagens são sempre montadas (para carregarem), mas só se
-          revelam quando prontas — e a camada de raios fica por baixo
+          revelam quando prontas - e a camada de raios fica por baixo
           como rede de segurança se a rede falhar */}
       {!temFotos ? <div className="montra-raios" /> : null}
 

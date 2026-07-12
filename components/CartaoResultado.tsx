@@ -52,7 +52,7 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   );
 
   /* DERROTA = CONVITE: uma fotografia de Braga ao acaso. A pessoa está
-     parada, sem prémio e a olhar para o ecrã — é o melhor momento da
+     parada, sem prémio e a olhar para o ecrã - é o melhor momento da
      app para lhe mostrar a cidade. */
   const convite = useMemo(() => {
     if (premio.ganha || !FOTOS_ATIVAS || FOTOS.length === 0) return null;
@@ -60,7 +60,7 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   }, [premio.ganha]);
 
   // se a foto do convite não carregar (wi-fi da feira em baixo),
-  // o bilhete volta à mascote — nunca mostra imagem partida
+  // o bilhete volta à mascote - nunca mostra imagem partida
   const [conviteFalhou, setConviteFalhou] = useState(false);
   const [fundoFalhou, setFundoFalhou] = useState(false);
   const [bracvsFalhou, setBracvsFalhou] = useState(false);
@@ -104,7 +104,7 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   return (
     /* TEATRO DE STAND: a vitória pinta o ECRÃ INTEIRO de vermelho festivo.
        De 15 metros, quem passa no corredor vê o ecrã "explodir" e aproxima-se
-       — com um véu escuro, ninguém percebia que algo bom tinha acontecido.
+       - com um véu escuro, ninguém percebia que algo bom tinha acontecido.
        A derrota mantém o véu neutro (discrição). */
     <div
       className={
@@ -114,7 +114,7 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
       aria-modal="true"
     >
       {/* FUNDO DA VITÓRIA: uma fotografia de Braga em duotone vermelho, o
-          mesmo tratamento do modo montra. Antes eram raios abstratos — um
+          mesmo tratamento do modo montra. Antes eram raios abstratos - um
           enfeite sem nexo. Agora o fundo é a cidade de que a pessoa acabou
           de ganhar um pedaço. Se a foto não carregar, cai nos raios. */}
       {premio.ganha ? (
@@ -236,7 +236,7 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
             <p className="canhoto-titulo">{t("levaBraga", idioma)}</p>
             <img
               src={urlQr}
-              alt={`QR code — ${QR_URL}`}
+              alt={`QR code - ${QR_URL}`}
               className="canhoto-qr"
               width={110}
               height={110}

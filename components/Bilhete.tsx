@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * RESULTADO — "selo de bronze" em vez de talão de talho
+ * RESULTADO - "selo de bronze" em vez de talão de talho
  * ------------------------------------------------------
  * VITÓRIA: o ecrã inteiro fica vermelho (visível do outro lado do
- * corredor da feira — se ficasse escuro, ninguém percebia que tinha
+ * corredor da feira - se ficasse escuro, ninguém percebia que tinha
  * acontecido algo bom). Confete em rajada única. O cartão só fecha
  * quando o STAFF confirma "Entregue", o que impede o mesmo prémio de
  * ser reclamado duas vezes e alimenta o contador público.

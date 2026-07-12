@@ -1,12 +1,12 @@
 /* =====================================================================
-   RODA DA SORTE VISIT BRAGA — "ZIGZAG BRAGA" · PASSAGEM DE REFINAMENTO
+   RODA DA SORTE VISIT BRAGA - "ZIGZAG BRAGA" · PASSAGEM DE REFINAMENTO
    ---------------------------------------------------------------------
    Princípios desta passagem (o que separa isto de um flyer):
-   1. CONTENÇÃO — o vermelho da marca concentra-se na roleta, no botão
+   1. CONTENÇÃO - o vermelho da marca concentra-se na roleta, no botão
       e na base; o resto do ecrã respira em neutros quentes
-   2. PROFUNDIDADE — gradientes subtis, sombras com queda realista e
+   2. PROFUNDIDADE - gradientes subtis, sombras com queda realista e
       luz ambiente; nada de fills chapados com contornos grossos
-   3. PRECISÃO — hairlines, detalhes maquinados (a linha zigzag do
+   3. PRECISÃO - hairlines, detalhes maquinados (a linha zigzag do
       escadório), tipografia com hierarquia clara
    O vermelho puro #FE0000 fica reservado a acentos; superfícies
    grandes usam a rampa #FE0000 → #C50007 para não vibrar no ecrã.
@@ -24,7 +24,7 @@
   --linha: rgba(26, 26, 28, 0.1);
   --display: "Archivo Black", "Arial Black", sans-serif;
   --corpo: "Inter", system-ui, sans-serif;
-  /* easing intencional — nunca linear */
+  /* easing intencional - nunca linear */
   --ease-expressivo: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-suave: cubic-bezier(0.45, 0, 0.25, 1);
   /* escala de espaçamento: múltiplos de 8 */
@@ -57,7 +57,7 @@ body {
   user-select: none;
 }
 
-/* grão de papel fino (~3%) — materialidade do fundo */
+/* grão de papel fino (~3%) - materialidade do fundo */
 body::before {
   content: "";
   position: fixed;
@@ -103,7 +103,7 @@ img {
 
 /* GRELHA DA PÁGINA: 4 linhas que reservam sempre o seu espaço.
    cabeçalho (auto) · palco (1fr, absorve a folga) · selos (auto) · rodapé (auto)
-   Nada é `fixed`, logo nada tapa nada — em qualquer formato. */
+   Nada é `fixed`, logo nada tapa nada - em qualquer formato. */
 .pagina {
   position: relative;
   min-height: 100dvh;
@@ -153,7 +153,7 @@ img {
   );
 }
 
-/* seletor de idioma — discreto e sempre presente */
+/* seletor de idioma - discreto e sempre presente */
 .seletor-idioma {
   position: fixed;
   top: 14px;
@@ -229,7 +229,7 @@ img {
   width: 100%;
   height: auto;
   display: block;
-  /* só definição de contorno — a sombra "no chão" é a elipse abaixo */
+  /* só definição de contorno - a sombra "no chão" é a elipse abaixo */
   filter: drop-shadow(2px 3px 4px rgba(26, 26, 28, 0.1));
 }
 
@@ -361,7 +361,7 @@ img {
 }
 
 /* espelho horizontal: virado para a roleta (as animações vivem na img,
-   o espelho vive aqui — não se anulam) */
+   o espelho vive aqui - não se anulam) */
 .bracvs-virar {
   transform: scaleX(-1);
 }
@@ -528,7 +528,7 @@ img {
   90%, 100% { left: 165%; }
 }
 
-/* postal de curiosidade — cartão editorial com friso vermelho */
+/* postal de curiosidade - cartão editorial com friso vermelho */
 .postal {
   position: relative;
   background: var(--branco);
@@ -620,7 +620,7 @@ img {
 
 /* -------------------- base zigzag e contador ----------------------- */
 
-/* RODAPÉ: linha da grelha (não é `fixed`) — reserva o seu espaço,
+/* RODAPÉ: linha da grelha (não é `fixed`) - reserva o seu espaço,
    por isso nunca corta os selos nem a mascote. O zigzag do escadório
    vive no topo dele, com hairline branca a rimar com o cabeçalho. */
 .rodape {
@@ -708,7 +708,7 @@ img {
   backdrop-filter: blur(4px);
 }
 
-/* VITÓRIA: vermelho festivo — o ecrã "explode" e vê-se do corredor */
+/* VITÓRIA: vermelho festivo - o ecrã "explode" e vê-se do corredor */
 .veu-vitoria {
   background: radial-gradient(
     130% 130% at 50% 40%,
@@ -725,7 +725,7 @@ img {
 }
 
 /* FUNDO DA VITÓRIA: fotografia de Braga em duotone vermelho.
-   Mesmo tratamento do modo montra — a marca continua a mandar, mas o
+   Mesmo tratamento do modo montra - a marca continua a mandar, mas o
    fundo passa a ter significado em vez de ser um enfeite abstrato. */
 .veu-fundo {
   position: absolute;
@@ -799,7 +799,7 @@ img {
   100% { transform: translateY(112vh) rotate(660deg); opacity: 0; }
 }
 
-/* Bracvs a festejar na vitória — ao lado do bilhete, a saltar */
+/* Bracvs a festejar na vitória - ao lado do bilhete, a saltar */
 .vitoria-bracvs {
   position: relative;
   z-index: 2;
@@ -929,7 +929,7 @@ img {
 }
 
 /* DERROTA = CONVITE: em vez de um beco sem saída, a foto do destino.
-   "Não ganhaste hoje — mas Braga fica à tua espera." É o melhor sítio
+   "Não ganhaste hoje - mas Braga fica à tua espera." É o melhor sítio
    da app para uma imagem: a pessoa está parada, a olhar, sem prémio. */
 .bilhete-convite {
   position: relative;
@@ -1156,7 +1156,7 @@ img {
   object-fit: cover;
   opacity: 0;
   /* duotone a sério: a foto vai a preto-e-branco com contraste alto e
-     as sombras abertas — é sobre esta base que o vermelho da marca
+     as sombras abertas - é sobre esta base que o vermelho da marca
      assenta (ver .montra-duotone). Nunca entra a cores cruas. */
   filter: grayscale(1) contrast(1.28) brightness(1.06);
   transition: opacity 1.8s var(--ease-suave);
@@ -1402,7 +1402,7 @@ img {
 }
 
 /* =====================================================================
-   OS TRÊS FORMATOS — regras explícitas, sem sobras
+   OS TRÊS FORMATOS - regras explícitas, sem sobras
    ---------------------------------------------------------------------
    A grelha (cabeçalho/palco/selos/rodapé) garante que nada se sobrepõe.
    Aqui só afinamos PROPORÇÕES por formato.

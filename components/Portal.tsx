@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * PORTAL — a correção de raiz do empilhamento
+ * PORTAL - a correção de raiz do empilhamento
  * --------------------------------------------
  * Um elemento `position: fixed` NÃO é relativo ao viewport se algum
  * antepassado criar um stacking context (z-index + position, transform,
- * filter...). O `.palco` tem z-index — e por isso os overlays (bilhete,
+ * filter...). O `.palco` tem z-index - e por isso os overlays (bilhete,
  * pergunta, modo montra) ficavam presos nesse contexto, com o cabeçalho,
  * os selos, a base e o seletor de idiomas a pintar POR CIMA do véu.
  *

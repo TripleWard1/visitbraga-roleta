@@ -1,8 +1,8 @@
 /**
- * CONFIGURAÇÃO CENTRAL — muda TUDO o que é específico de cada feira AQUI
+ * CONFIGURAÇÃO CENTRAL - muda TUDO o que é específico de cada feira AQUI
  * ----------------------------------------------------------------------
  * Para preparar a app para uma nova feira, normalmente só precisas de:
- *   1. Mudar FEIRA_ID (cria um documento novo no Firestore — os stocks
+ *   1. Mudar FEIRA_ID (cria um documento novo no Firestore - os stocks
  *      de feiras diferentes nunca se misturam)
  *   2. Ajustar os prémios/stock em lib/premios.ts
  *   3. (opcional) Apontar QR_URL para uma landing page da campanha
@@ -32,14 +32,14 @@ export const PERGUNTA_ORIGEM = true;
 export const SEGUNDOS_MONTRA = 45;
 
 /**
- * IDIOMA POR OMISSÃO DESTA FEIRA — importante!
+ * IDIOMA POR OMISSÃO DESTA FEIRA - importante!
  * -------------------------------------------
  * O tablet do stand é do Município (browser em português), por isso a
  * deteção automática do idioma daria PT... em Madrid. Define aqui o
  * idioma DA FEIRA: "es" na Fitur, "en" na WTM, "pt" cá dentro.
  *
  * É o idioma inicial E o idioma para onde a app REGRESSA sozinha quando
- * entra em modo montra — o visitante seguinte nunca apanha o ecrã na
+ * entra em modo montra - o visitante seguinte nunca apanha o ecrã na
  * língua que o anterior escolheu.
  *
  * Põe null para voltar a detetar pelo browser (só faz sentido se a app
@@ -65,5 +65,5 @@ export const ORIGENS: { codigo: string; bandeira: string; nome: string }[] = [
   { codigo: "de", bandeira: "🇩🇪", nome: "Deutschland" },
   { codigo: "it", bandeira: "🇮🇹", nome: "Italia" },
   { codigo: "nl", bandeira: "🇳🇱", nome: "Nederland" },
-  { codigo: "outro", bandeira: "🌍", nome: "—" }, // nome traduzido em i18n.ts
+  { codigo: "outro", bandeira: "🌍", nome: "-" }, // nome traduzido em i18n.ts
 ];

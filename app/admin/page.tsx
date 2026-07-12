@@ -1,18 +1,18 @@
 "use client";
 
 /**
- * PÁGINA DE GESTÃO — /admin
+ * PÁGINA DE GESTÃO - /admin
  * -------------------------
  * Duas audiências, um ecrã:
  *
  * 1. EQUIPA DO STAND (durante a feira): stock ao vivo, reposição rápida,
- *    e um indicador honesto de LIGAÇÃO — porque a pior coisa que pode
+ *    e um indicador honesto de LIGAÇÃO - porque a pior coisa que pode
  *    acontecer num stand é o staff julgar que o stock está a sincronizar
  *    entre tablets quando na verdade caiu para modo local.
  *
- * 2. DIVISÃO (depois da feira): os KPIs que justificam o investimento —
+ * 2. DIVISÃO (depois da feira): os KPIs que justificam o investimento -
  *    interações totais, taxa de prémio, taxa de entrega e mercados de
- *    origem — com um botão "Copiar relatório" que devolve o texto pronto
+ *    origem - com um botão "Copiar relatório" que devolve o texto pronto
  *    a colar num email ou numa nota interna.
  *
  * Protegida por PIN simples (lib/config.ts). Trava curiosos; para os dias
@@ -146,7 +146,7 @@ export default function AdminPage() {
   /** texto pronto a colar num email institucional ou nota interna */
   const copiarRelatorio = async () => {
     const linhas = [
-      `RELATÓRIO — Roda da Sorte Visit Braga`,
+      `RELATÓRIO - Roda da Sorte Visit Braga`,
       `Feira: ${FEIRA_NOME} (${FEIRA_ID})`,
       `Data de extração: ${new Date().toLocaleDateString("pt-PT")}`,
       ``,
@@ -186,7 +186,7 @@ export default function AdminPage() {
     <main className="admin">
       <h1>Gestão do stand</h1>
       <p className="admin-nota">
-        Feira ligada: <strong>{FEIRA_NOME}</strong> — documento Firestore{" "}
+        Feira ligada: <strong>{FEIRA_NOME}</strong> - documento Firestore{" "}
         <code>roletas/{FEIRA_ID}</code>
       </p>
 
@@ -202,10 +202,10 @@ export default function AdminPage() {
         }
       >
         {!firebaseAtivo
-          ? "⚠ MODO LOCAL — Firebase por configurar (lib/firebase.ts). O stock vive só neste dispositivo."
+          ? "⚠ MODO LOCAL - Firebase por configurar (lib/firebase.ts). O stock vive só neste dispositivo."
           : online
-          ? "✓ Sincronizado — o stock é partilhado em tempo real entre todos os tablets."
-          : "⚠ SEM REDE — a app continua a funcionar, mas este tablet só voltará a sincronizar quando houver ligação."}
+          ? "✓ Sincronizado - o stock é partilhado em tempo real entre todos os tablets."
+          : "⚠ SEM REDE - a app continua a funcionar, mas este tablet só voltará a sincronizar quando houver ligação."}
       </div>
 
       <h2>Resultados da feira</h2>
@@ -280,7 +280,7 @@ export default function AdminPage() {
                   {p.linha2 ? " " + p.linha2.pt : ""}
                 </td>
                 <td className={"admin-restam" + (baixo ? " restam-baixo" : "")}>
-                  {stock[p.id] ?? "—"}
+                  {stock[p.id] ?? "-"}
                   {baixo ? (restam === 0 ? " · esgotado" : " · baixo") : ""}
                 </td>
                 <td>

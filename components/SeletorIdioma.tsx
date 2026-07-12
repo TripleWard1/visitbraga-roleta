@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * SELETOR DE IDIOMA — PT / ES / EN
+ * SELETOR DE IDIOMA - PT / ES / EN
  * Sempre visível no canto superior; troca instantânea, sem recarregar.
  */
 

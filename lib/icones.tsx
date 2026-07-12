@@ -1,5 +1,5 @@
 /**
- * ÍCONES DOS PRÉMIOS — desenhados de raiz para esta marca
+ * ÍCONES DOS PRÉMIOS - desenhados de raiz para esta marca
  * --------------------------------------------------------
  * Nada de bibliotecas de ícones genéricos (lucide, fontawesome...): a
  * linguagem do logótipo Visit Braga é geométrica, de traço grosso e

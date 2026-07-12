@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * ROLETA VISIT BRAGA — PASSAGEM DE ELEVAÇÃO PREMIUM
+ * ROLETA VISIT BRAGA - PASSAGEM DE ELEVAÇÃO PREMIUM
  * ---------------------------------------------------
  * MATERIALIDADE com luz única (topo-esquerda) a comandar tudo:
  * - aro com bisel em 3 camadas (highlight na orla exposta à luz,
@@ -53,7 +53,7 @@ function caminhoFatia(i: number) {
   return `M ${C} ${C} L ${x0} ${y0} A ${R} ${R} 0 0 1 ${x1} ${y1} Z`;
 }
 
-/** linha zigzag fina no anel branco — o escadório como detalhe maquinado */
+/** linha zigzag fina no anel branco - o escadório como detalhe maquinado */
 const ZIGZAG = (() => {
   const passos = 48;
   const partes: string[] = [];
@@ -66,11 +66,11 @@ const ZIGZAG = (() => {
 })();
 
 /**
- * TIPOGRAFIA RADIAL DA RODA — a correção que mais peso tem
+ * TIPOGRAFIA RADIAL DA RODA - a correção que mais peso tem
  * ---------------------------------------------------------
  * Antes, o texto era TANGENCIAL (perpendicular ao raio): funciona no
  * topo, mas nas fatias de baixo aparece DE PERNAS PARA O AR. É o tell
- * clássico de roleta feita à pressa — e nenhuma sombra ou gradiente o
+ * clássico de roleta feita à pressa - e nenhuma sombra ou gradiente o
  * compensa.
  *
  * Agora o texto corre AO LONGO DO RAIO, do centro para fora, e cada
@@ -126,7 +126,7 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
   /* O ângulo NÃO vive em estado React: a 60 fps, um setState por frame
      obrigaria a re-renderizar 8 fatias + 16 textos + separadores e faz
      o giro gaguejar em tablets medianos. Guardamos o ângulo num ref e
-     escrevemos o transform diretamente no <g> — o React só volta a
+     escrevemos o transform diretamente no <g> - o React só volta a
      trabalhar quando algo REAL muda (giro terminou, resultado, stock). */
   const anguloRef = useRef(0);
   const fatiasRef = useRef<SVGGElement | null>(null);
@@ -373,7 +373,7 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
               <stop offset="100%" stopColor="#d40008" />
             </radialGradient>
             {/* prémio-herói: vermelho profundo e vivo, distinto das
-                fatias normais — é o que cria fila no stand */}
+                fatias normais - é o que cria fila no stand */}
             <radialGradient id="fatiaHeroi" cx="0.5" cy="0.5" r="0.62">
               <stop offset="0%" stopColor="#ff3a1e" />
               <stop offset="62%" stopColor="#d20009" />

@@ -4,14 +4,14 @@
  * ECRÃ SEMPRE ACORDADO (Screen Wake Lock API)
  * --------------------------------------------
  * O bug nº1 de qualquer quiosque: ao fim de alguns minutos sem toques,
- * o tablet apaga o ecrã e o stand fica morto — logo nos períodos de
+ * o tablet apaga o ecrã e o stand fica morto - logo nos períodos de
  * pouco movimento, que são exatamente aqueles em que o modo montra
  * deveria estar a chamar gente.
  *
  * Este hook mantém o ecrã ligado enquanto a app estiver visível e
  * READQUIRE o bloqueio quando o separador volta a ficar visível (o
  * sistema liberta-o sozinho ao minimizar). Falha em silêncio nos
- * browsers sem suporte — nunca parte a app.
+ * browsers sem suporte - nunca parte a app.
  *
  * Nota para o stand: em iPad/Safari o suporte é irregular; garante
  * também "Bloqueio automático: Nunca" nas definições do tablet.
@@ -47,7 +47,7 @@ export function useEcraSempreAceso() {
         }
         sentinelaRef.current = sentinela;
       } catch {
-        /* recusado pelo sistema (ex.: bateria fraca) — seguimos na mesma */
+        /* recusado pelo sistema (ex.: bateria fraca) - seguimos na mesma */
       }
     };
 

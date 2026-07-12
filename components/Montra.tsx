@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * MODO MONTRA — o farol do corredor
+ * MODO MONTRA - o farol do corredor
  * Ao fim de ~45 s sem toques, o ecrã inteiro fica vermelho, o sino
  * badala e o CTA pulsa nas 3 línguas. É a única altura em que o
- * vermelho toma o ecrã todo — por isso funciona.
+ * vermelho toma o ecrã todo - por isso funciona.
  */
 
 import { useEffect, useState } from "react";

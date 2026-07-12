@@ -1,11 +1,11 @@
-# Roda da Sorte Visit Braga — Feiras Internacionais
+# Roda da Sorte Visit Braga - Feiras Internacionais
 
 Webapp de roleta de prémios para o stand Visit Braga em feiras internacionais
 de turismo (Fitur, WTM, B-Travel, …). Trilingue (PT/ES/EN), com stock em tempo
 real por feira, modo montra, curiosidades de Braga durante o giro, QR code e
 confirmação de entrega pelo staff.
 
-## Identidade visual — "Zigzag Braga"
+## Identidade visual - "Zigzag Braga"
 
 Branco luminoso + vermelho Visit Braga (#FE0000) + preto; zero dourado. A
 geometria vem do escadório do Bom Jesus: o aro da roleta é um anel em
@@ -23,12 +23,12 @@ e CTA trilingue. Cores e afinações em variáveis no topo de
 1. Cria um projeto Next.js (App Router + TypeScript) no StackBlitz
 2. Substitui/copia as pastas `app/`, `components/`, `lib/` e `public/`
 3. Instala a única dependência extra: `npm install firebase`
-4. Já funciona em **modo local** (stock em memória) — ideal para testar
+4. Já funciona em **modo local** (stock em memória) - ideal para testar
 
 ## Configurar o Firebase (stock partilhado entre dispositivos)
 
 1. [console.firebase.google.com](https://console.firebase.google.com) →
-   Adicionar projeto (ex.: `roleta-feiras`) — **projeto novo**, separado do
+   Adicionar projeto (ex.: `roleta-feiras`) - **projeto novo**, separado do
    Braga Day, para os dados não se misturarem
 2. Build → **Firestore Database** → Criar base de dados
 3. Adicionar app Web (ícone `</>`), copiar o `firebaseConfig` para
@@ -53,13 +53,13 @@ service cloud.firestore {
 ## Preparar uma nova feira (checklist)
 
 1. `lib/config.ts` → mudar `FEIRA_ID` (ex.: `"fitur-2027"`) e `FEIRA_NOME`
-   — isto cria documentos novos no Firestore; os stocks nunca se misturam
+   - isto cria documentos novos no Firestore; os stocks nunca se misturam
 2. `lib/config.ts` → **`IDIOMA_POR_OMISSAO`**: o idioma DA FEIRA (`"es"` na
    Fitur, `"en"` na WTM, `"pt"` cá dentro). Sem isto, o tablet do Município
    arranca em português... em Madrid. É também o idioma para onde a app
    regressa sozinha entre visitantes
 3. `lib/premios.ts` → prémios e stock inicial (3 línguas). Marca **um** com
-   `destaque: true` — o prémio-herói que cria fila (ex.: uma experiência)
+   `destaque: true` - o prémio-herói que cria fila (ex.: uma experiência)
 4. `lib/config.ts` → `QR_URL`. **Usa UTM** para medires o retorno da feira no
    portal: `https://www.visitbraga.travel/?utm_source=fitur2027&utm_medium=roleta&utm_campaign=stand`
 5. `lib/selos.ts` → rever os selos de destino (só factos verificáveis)
@@ -80,18 +80,18 @@ service cloud.firestore {
 
 Três fotos oficiais integradas por URL (`lib/fotos.ts`): Bom Jesus, Sé e
 Museu D. Diogo de Sousa. Não vivem em `/public` (o StackBlitz tem limite
-de espaço) — e assim trocá-las entre feiras não obriga a novo deploy.
+de espaço) - e assim trocá-las entre feiras não obriga a novo deploy.
 
 Se a rede falhar, a app deteta e volta sozinha à versão gráfica: nunca
 aparece imagem partida no stand. **A prazo, aloja-as no portal Visit
 Braga** em vez do imgur (serviço de terceiros, sem garantias).
 
 Entram em dois sítios, sempre tingidas de vermelho da marca ou
-emolduradas — nunca a cores cruas a competir com a identidade:
+emolduradas - nunca a cores cruas a competir com a identidade:
 
 - **Modo montra**: slideshow em duotone vermelho com Ken Burns lento e a
   legenda do local no idioma ativo
-- **Ecrã de derrota**: uma foto ao acaso como CONVITE — "não ganhaste,
+- **Ecrã de derrota**: uma foto ao acaso como CONVITE - "não ganhaste,
   mas Braga fica à tua espera". É o melhor momento da app para vender o
   destino: a pessoa está parada, sem prémio, a olhar para o ecrã
 
@@ -101,7 +101,7 @@ Para trocar/acrescentar: mete os JPG em `public/fotos/` e edita
 ## Ecrã sempre aceso
 
 A app usa a Screen Wake Lock API para impedir que o tablet adormeça durante
-a feira. Em iPad/Safari o suporte é irregular — no tablet do stand, põe
+a feira. Em iPad/Safari o suporte é irregular - no tablet do stand, põe
 também **Bloqueio automático: Nunca** nas definições do sistema.
 
 ## Estrutura
@@ -125,7 +125,7 @@ lib/firebase.ts               ⚙️ configuração do projeto Firebase
 
 ## Notas técnicas
 
-- **Stock congelado durante o giro** — as fatias só ficam cinzentas quando a
+- **Stock congelado durante o giro** - as fatias só ficam cinzentas quando a
   roleta para, para não denunciar o resultado (lição do Braga Day)
 - **Reserva por transação** Firestore antes da animação: dois dispositivos
   nunca entregam a mesma última unidade

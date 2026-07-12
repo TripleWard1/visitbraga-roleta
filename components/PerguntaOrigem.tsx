@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * PERGUNTA-RELÂMPAGO — "De onde nos visitas?"
+ * PERGUNTA-RELÂMPAGO - "De onde nos visitas?"
  * -------------------------------------------
  * 1 toque numa bandeira (ou "Saltar") e a roleta gira logo a seguir.
- * A resposta é guardada nas estatísticas do Firestore por feira —
+ * A resposta é guardada nas estatísticas do Firestore por feira -
  * dá dados de visitantes para o relatório da Divisão sem criar atrito.
  * Desativa-se em lib/config.ts (PERGUNTA_ORIGEM = false).
  */

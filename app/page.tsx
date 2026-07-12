@@ -1,13 +1,13 @@
 "use client";
 
 /**
- * PÁGINA PRINCIPAL — "ZIGZAG BRAGA" (refinada)
+ * PÁGINA PRINCIPAL - "ZIGZAG BRAGA" (refinada)
  * ---------------------------------------------
  * Composição limpa e profissional: cabeçalho discreto com divisor
  * zigzag fino, roleta gigante como protagonista absoluta (o Bracvs
  * vive ancorado a ela, dentro do componente Roleta), base vermelha
  * com dentes finos de escadório e contador em pastilha. Sem texturas
- * de padrão — a atmosfera vem de luz suave e sombra, não de enfeites.
+ * de padrão - a atmosfera vem de luz suave e sombra, não de enfeites.
  * Após inatividade entra o modo montra "Vermelho Total".
  */
 
@@ -92,7 +92,7 @@ export default function Pagina() {
           height={222}
         />
         <p className="cabecalho-tagline">{t("tagline", idioma)}</p>
-        {/* divisor zigzag fino — o escadório como assinatura discreta */}
+        {/* divisor zigzag fino - o escadório como assinatura discreta */}
         <div className="cabecalho-zig" aria-hidden="true" />
         <SeletorIdioma idioma={idioma} aoMudar={setIdioma} />
       </header>
@@ -103,7 +103,7 @@ export default function Pagina() {
       {MOSTRAR_SELOS ? <FaixaSelos idioma={idioma} /> : null}
 
       {/* RODAPÉ: a base zigzag deixou de ser um elemento fixo a flutuar
-          por cima de tudo — é uma LINHA da grelha, com o contador dentro.
+          por cima de tudo - é uma LINHA da grelha, com o contador dentro.
           Assim reserva o seu espaço e nunca tapa os selos nem a mascote. */}
       <footer className="rodape">
         <div className="rodape-zig" aria-hidden="true" />

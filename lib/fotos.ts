@@ -1,20 +1,20 @@
 /**
- * FOTOGRAFIA DO DESTINO — alojada fora do projeto
+ * FOTOGRAFIA DO DESTINO - alojada fora do projeto
  * -------------------------------------------------
  * As fotos NÃO vivem em /public (o StackBlitz tem limite de espaço):
  * são servidas por URL. Vantagem extra: trocar as fotos de uma feira
- * para a outra não obriga a novo deploy — muda-se o URL e pronto.
+ * para a outra não obriga a novo deploy - muda-se o URL e pronto.
  *
  * ORDEM (confirmada pelo Hugo a partir do ecrã):
  *   wJ7SN6Z = Bom Jesus · Vt4acFK = Museu · IA7y5fO = Sé
  *
  * ⚠️ REDE: se o wi-fi da feira falhar, as fotos não carregam. A app
  * deteta isso e volta sozinha à versão gráfica (Vermelho Total com o
- * sino) — nunca aparece um espaço vazio nem um ícone de imagem partida
+ * sino) - nunca aparece um espaço vazio nem um ícone de imagem partida
  * no stand. Ver components/ModoMontra.tsx.
  *
  * 💡 A PRAZO: o ideal é alojá-las no portal Visit Braga (ou noutro
- * domínio do Município) em vez do imgur — é serviço de terceiros, sem
+ * domínio do Município) em vez do imgur - é serviço de terceiros, sem
  * garantias, e um dia pode simplesmente deixar de servir a imagem.
  */
 

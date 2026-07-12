@@ -1,7 +1,7 @@
 /**
- * PRÉMIOS — CONFIGURAÇÃO (PLACEHOLDERS: edita quando tiveres a lista final)
+ * PRÉMIOS - CONFIGURAÇÃO (PLACEHOLDERS: edita quando tiveres a lista final)
  * -------------------------------------------------------------------------
- * id     → identificador único (não repetir!) — é a chave do stock no Firestore
+ * id     → identificador único (não repetir!) - é a chave do stock no Firestore
  * linha1 → 1.ª linha na fatia, nas 3 línguas (curto! máx. ~10 caracteres)
  * linha2 → (opcional) 2.ª linha, nas 3 línguas
  * peso   → probabilidade relativa (maior = sai mais vezes)
@@ -11,7 +11,7 @@
  *          "pin", "autocolante", "brinde", "bilhete", "sino", "sem-sorte"
  * destaque → true no PRÉMIO-HERÓI da feira (ex.: uma experiência em Braga).
  *            A fatia ganha tratamento visual próprio (vermelho profundo,
- *            estrela e brilho) — é o que cria fila no stand. Usa em UM só.
+ *            estrela e brilho) - é o que cria fila no stand. Usa em UM só.
  *
  * NOTA: o stock aqui é o stock INICIAL desta feira. Depois do primeiro
  * arranque, o stock real vive no Firestore (documento roletas/{FEIRA_ID})
@@ -30,7 +30,7 @@ export type Premio = {
   ganha: boolean;
   stock: number | null;
   destaque?: boolean;
-  /** ícone do conjunto próprio (lib/icones.tsx) — aparece no bilhete */
+  /** ícone do conjunto próprio (lib/icones.tsx) - aparece no bilhete */
   icone: NomeIcone;
 };
 

@@ -1,5 +1,5 @@
 /**
- * CURIOSIDADES DE BRAGA — mostradas enquanto a roleta gira (5–7 s)
+ * CURIOSIDADES DE BRAGA - mostradas enquanto a roleta gira (5–7 s)
  * -----------------------------------------------------------------
  * Uma curiosidade ao acaso por giro, no idioma ativo. Cada giro
  * promove o destino sem esforço. Acrescenta/edita à vontade.
@@ -9,9 +9,9 @@ import type { TextoML } from "./i18n";
 
 export const FACTOS: TextoML[] = [
   {
-    pt: "Fundada pelos Romanos como Bracara Augusta, Braga é a cidade mais antiga de Portugal — tem mais de 2000 anos.",
+    pt: "Fundada pelos Romanos como Bracara Augusta, Braga é a cidade mais antiga de Portugal - tem mais de 2000 anos.",
     es: "Fundada por los romanos como Bracara Augusta, Braga es la ciudad más antigua de Portugal: tiene más de 2000 años.",
-    en: "Founded by the Romans as Bracara Augusta, Braga is the oldest city in Portugal — over 2,000 years old.",
+    en: "Founded by the Romans as Bracara Augusta, Braga is the oldest city in Portugal - over 2,000 years old.",
   },
   {
     pt: "O Santuário do Bom Jesus do Monte é Património Mundial da UNESCO desde 2019.",
@@ -24,9 +24,9 @@ export const FACTOS: TextoML[] = [
     en: "The Bom Jesus funicular (1882) is the world's oldest water-powered funicular still in operation.",
   },
   {
-    pt: "A Sé de Braga é a catedral mais antiga de Portugal — daí o ditado «mais velho que a Sé de Braga».",
+    pt: "A Sé de Braga é a catedral mais antiga de Portugal - daí o ditado «mais velho que a Sé de Braga».",
     es: "La Catedral de Braga es la más antigua de Portugal; de ahí el dicho «más viejo que la Sé de Braga».",
-    en: "Braga Cathedral is the oldest in Portugal — hence the saying “older than the Sé de Braga”.",
+    en: "Braga Cathedral is the oldest in Portugal - hence the saying “older than the Sé de Braga”.",
   },
   {
     pt: "Braga foi eleita Melhor Destino Europeu em 2021.",
@@ -34,9 +34,9 @@ export const FACTOS: TextoML[] = [
     en: "Braga was voted European Best Destination in 2021.",
   },
   {
-    pt: "O pudim Abade de Priscos, criado em Braga no séc. XIX, leva toucinho na receita — e é delicioso.",
+    pt: "O pudim Abade de Priscos, criado em Braga no séc. XIX, leva toucinho na receita - e é delicioso.",
     es: "El pudin Abade de Priscos, creado en Braga en el siglo XIX, lleva tocino en la receta… y está delicioso.",
-    en: "Abade de Priscos pudding, created in Braga in the 19th century, is made with pork lard — and it's delicious.",
+    en: "Abade de Priscos pudding, created in Braga in the 19th century, is made with pork lard - and it's delicious.",
   },
   {
     pt: "O São João de Braga é uma das maiores e mais antigas festas populares de Portugal.",

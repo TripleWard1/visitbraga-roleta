@@ -1,12 +1,12 @@
 /**
- * SINO DA MARCA — vetor
+ * SINO DA MARCA - vetor
  * ----------------------
  * O sino oficial (o "a" de BRAGA no logótipo), vetorizado a partir do PNG
  * da marca com 99,3% de fidelidade. Passa a SVG inline, o que resolve três
  * problemas de uma vez:
  *   1. não pode dar 404 nem "imagem partida" (era o que acontecia dentro
  *      dos overlays em portal)
- *   2. fica nítido em qualquer tamanho — do selo de 15 px ao sino gigante
+ *   2. fica nítido em qualquer tamanho - do selo de 15 px ao sino gigante
  *      do modo montra
  *   3. recebe a cor por CSS (currentColor): um só componente serve o
  *      vermelho, o branco e o preto

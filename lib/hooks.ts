@@ -5,7 +5,7 @@ import { SEGUNDOS_MONTRA } from "./config";
 
 /**
  * ECRÃ SEMPRE ACESO (Screen Wake Lock)
- * O bug nº1 de qualquer quiosque: o tablet adormece nas horas mortas —
+ * O bug nº1 de qualquer quiosque: o tablet adormece nas horas mortas -
  * logo quando o modo montra devia estar a chamar gente. Readquire o
  * bloqueio ao voltar de segundo plano. Falha em silêncio sem suporte.
  * (No iPad, põe também "Bloqueio automático: Nunca" nas definições.)

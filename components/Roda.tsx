@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * A RODA — disco lavrado, não "roleta de feira"
+ * A RODA - disco lavrado, não "roleta de feira"
  * ----------------------------------------------
  * Decisões de desenho (o que a torna diferente):
  *
  * 1. O VERMELHO É ACENTO, NÃO CAMPO. As fatias alternam TINTA e MARFIM;
  *    o vermelho da marca fica reservado ao ponteiro, ao sino do cubo e
  *    ao prémio-herói. Assim, quando aparece vermelho, ele SIGNIFICA
- *    alguma coisa — em vez de gritar em todo o lado.
+ *    alguma coisa - em vez de gritar em todo o lado.
  *
  * 2. ARO LAVRADO como o canto de uma moeda romana: anel de tinta com
  *    estrias finas e a legenda BRACARA AVGVSTA gravada em marfim.
@@ -255,7 +255,7 @@ export default function Roda({
           />
         </defs>
 
-        {/* ARO LAVRADO — canto de moeda romana */}
+        {/* ARO LAVRADO - canto de moeda romana */}
         <circle cx={C} cy={C} r={R_ARO + 16} fill="url(#gAro)" />
         <circle cx={C} cy={C} r={R_ARO + 15} fill="none" stroke="url(#gBisel)" strokeWidth="1.4" />
         {/* estrias do canto */}
@@ -274,7 +274,7 @@ export default function Roda({
         </text>
         <circle cx={C} cy={C} r={R + 6} fill="none" stroke="#0b0a09" strokeWidth="2" />
 
-        {/* DISCO — roda */}
+        {/* DISCO - roda */}
         <g ref={discoRef} style={{ transformOrigin: `${C}px ${C}px` }}>
           {PREMIOS.map((p, i) => {
             const esgotado = !temStock(p, stockVisivel);
@@ -348,7 +348,7 @@ export default function Roda({
         <circle cx={C} cy={C} r={R} fill="url(#gLuz)" pointerEvents="none" />
         <circle cx={C} cy={C} r={R} fill="url(#gEncastre)" pointerEvents="none" />
 
-        {/* CUBO — medalhão marfim com o sino da marca em vermelho */}
+        {/* CUBO - medalhão marfim com o sino da marca em vermelho */}
         <circle cx={C + 2} cy={C + 3} r="72" fill="rgba(0,0,0,0.35)" filter="url(#fSombra)" />
         <circle cx={C} cy={C} r="72" fill="url(#gMarfim)" />
         <circle cx={C} cy={C} r="71" fill="none" stroke="url(#gBisel)" strokeWidth="1.5" />
@@ -356,7 +356,7 @@ export default function Roda({
         <image href="/sino-braga-vermelho.png" x={C - 26} y={C - 29} width="52" height="58" />
       </svg>
 
-      {/* PONTEIRO — cunha vermelha com o sino, badala a cada fatia */}
+      {/* PONTEIRO - cunha vermelha com o sino, badala a cada fatia */}
       <svg className="ponteiro" viewBox="0 0 80 110" aria-hidden="true">
         <defs>
           <linearGradient id="gPonteiro" x1="0" y1="0" x2="1" y2="1">

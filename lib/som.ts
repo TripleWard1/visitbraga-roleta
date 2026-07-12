@@ -1,16 +1,16 @@
 /**
- * MOTOR DE SOM — sinos sintetizados (zero ficheiros de áudio)
+ * MOTOR DE SOM - sinos sintetizados (zero ficheiros de áudio)
  * ------------------------------------------------------------
  * Um sino real não é uma onda pura: tem parciais INARMÓNICOS (o famoso
  * 2.76× do modo de badalada) e um decaimento exponencial. É isso que
  * distingue "sino de igreja" de "bip de micro-ondas".
  *
  * Quatro sons, todos derivados do mesmo corpo:
- *   tique(p)  — a passar cada fatia; a altura sobe com a desaceleração,
+ *   tique(p)  - a passar cada fatia; a altura sobe com a desaceleração,
  *               o que dá a sensação física de a roda estar a "cansar"
- *   pouso()   — a roda assenta (baixo, curto, seco)
- *   repique() — vitória: carrilhão ascendente
- *   toque()   — derrota: duas notas descendentes, sem drama
+ *   pouso()   - a roda assenta (baixo, curto, seco)
+ *   repique() - vitória: carrilhão ascendente
+ *   toque()   - derrota: duas notas descendentes, sem drama
  */
 
 let ctx: AudioContext | null = null;

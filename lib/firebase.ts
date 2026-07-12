@@ -1,7 +1,7 @@
 /**
  * CONFIGURAÇÃO DO FIREBASE
  * ------------------------
- * Este é um projeto NOVO — cria um projeto Firebase próprio para as feiras
+ * Este é um projeto NOVO - cria um projeto Firebase próprio para as feiras
  * (não reutilizes o do Braga Day, para os dados não se misturarem):
  *
  * 1. console.firebase.google.com → Adicionar projeto (ex.: "roleta-feiras")

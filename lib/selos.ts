@@ -6,7 +6,7 @@
  * para girar leva três provas de que Braga vale a viagem.
  *
  * Regra de ouro: no máximo 3–4 e todos verificáveis. Nada de superlativos
- * vazios ("cidade mágica") — só factos que aguentam escrutínio.
+ * vazios ("cidade mágica") - só factos que aguentam escrutínio.
  *
  * Editáveis à vontade por feira/época.
  */

@@ -1,5 +1,5 @@
 /**
- * TRADUÇÕES — português de Portugal · español · English
+ * TRADUÇÕES - português de Portugal · español · English
  * ------------------------------------------------------
  * Todo o texto da interface vive aqui. Para afinar uma frase,
  * edita apenas este ficheiro.

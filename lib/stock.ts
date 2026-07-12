@@ -1,12 +1,12 @@
 /**
- * STOCK E ESTATÍSTICAS EM TEMPO REAL (Firestore) — POR FEIRA
+ * STOCK E ESTATÍSTICAS EM TEMPO REAL (Firestore) - POR FEIRA
  * -----------------------------------------------------------
  * Cada feira tem os seus próprios documentos (os stocks nunca se misturam):
  *   roletas/{FEIRA_ID}          → { premioId: unidades }
  *   roletas/{FEIRA_ID}--stats   → { entregues: n, origens: { es: 12, … } }
  *
  * - subscreverStock: escuta o stock ao vivo (todos os dispositivos em sincronia)
- * - reservarPremio: desconta 1 unidade DENTRO de uma transação — se dois
+ * - reservarPremio: desconta 1 unidade DENTRO de uma transação - se dois
  *   dispositivos girarem ao mesmo tempo e só restar 1 unidade, só um ganha
  * - subscreverStats / registarEntrega / registarOrigem: contador público
  *   de prémios entregues e estatísticas de origem dos visitantes
@@ -167,7 +167,7 @@ export function subscreverStats(cb: (s: Stats) => void): () => void {
 
 /**
  * +1 giro (e prémio/derrota conforme o resultado).
- * Chamado no fim de cada giro — é ISTO que alimenta o relatório da feira:
+ * Chamado no fim de cada giro - é ISTO que alimenta o relatório da feira:
  * "1.400 interações, 62% de taxa de prémio, 38% de espanhóis".
  */
 export async function registarGiro(ganhou: boolean): Promise<void> {
