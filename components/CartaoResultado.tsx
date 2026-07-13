@@ -13,11 +13,13 @@
  * O véu de fundo é VERMELHO na vitória (visível do outro lado do
  * corredor da feira) e neutro na derrota.
  *
- * QR: imagem via api.qrserver.com (sem dependências); o URL escrito
- * por baixo garante a informação mesmo sem rede.
+ * QR oficial servido de /public (offline). O URL escrito por baixo é a
+ * rede de segurança final.
  */
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { dispararConfetes } from "@/lib/confetti";
+import { vibrar } from "@/lib/audio";
 import type { Premio } from "@/lib/premios";
 import { QR_URL } from "@/lib/config";
 import { registarEntrega } from "@/lib/stock";
@@ -32,17 +34,7 @@ type Props = {
   aoFechar: () => void;
 };
 
-type Confete = {
-  esq: number;
-  atraso: number;
-  dur: number;
-  larg: number;
-  alt: number;
-  cor: string;
-  rot: number;
-};
 
-const CORES_CONFETE = ["#fe0000", "#111111", "#ffffff", "#fe0000"];
 
 export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   const mensagem = useMemo(
@@ -65,6 +57,44 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   const [fundoFalhou, setFundoFalhou] = useState(false);
   const [bracvsFalhou, setBracvsFalhou] = useState(false);
 
+  /* ── premir 2 s para confirmar a entrega ── */
+  const [progresso, setProgresso] = useState(0);
+  const [aConfirmar, setAConfirmar] = useState(false);
+  const rafRef = useRef(0);
+  const inicioRef = useRef(0);
+  const feitoRef = useRef(false);
+
+  const DURACAO = 2000;
+
+  const pararConfirmacao = useCallback(() => {
+    cancelAnimationFrame(rafRef.current);
+    if (feitoRef.current) return;
+    setAConfirmar(false);
+    setProgresso(0);
+  }, []);
+
+  const comecarConfirmacao = useCallback(() => {
+    if (feitoRef.current) return;
+    setAConfirmar(true);
+    inicioRef.current = performance.now();
+    vibrar(12);
+    const passo = (agora: number) => {
+      const p = Math.min(100, ((agora - inicioRef.current) / DURACAO) * 100);
+      setProgresso(p);
+      if (p >= 100) {
+        feitoRef.current = true;
+        vibrar([24, 30, 24]);
+        registarEntrega();
+        setTimeout(aoFechar, 260);
+        return;
+      }
+      rafRef.current = requestAnimationFrame(passo);
+    };
+    rafRef.current = requestAnimationFrame(passo);
+  }, [aoFechar]);
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), []);
+
   /* fotografia de fundo da vitória (uma ao acaso) */
   const fundo = useMemo(() => {
     if (!premio.ganha || !FOTOS_ATIVAS || FOTOS.length === 0) return null;
@@ -72,32 +102,36 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   }, [premio.ganha]);
 
   // confetes só na vitória (gerados uma vez)
-  const confetes = useMemo<Confete[]>(() => {
-    if (!premio.ganha) return [];
-    return Array.from({ length: 60 }, (_, i) => ({
-      esq: Math.random() * 100,
-      atraso: 0.08 + Math.random() * 0.45, // rajada única, não gotejamento
-      dur: 2.4 + Math.random() * 1.6,
-      larg: 7 + Math.random() * 7,
-      alt: 10 + Math.random() * 8,
-      cor: CORES_CONFETE[i % CORES_CONFETE.length],
-      rot: Math.random() * 360,
-    }));
+  /* CONFETES com física própria (lib/confetti.ts): rajadas laterais dos
+     cantos de baixo, gravidade, arrasto do ar e rotação em dois eixos -
+     as peças rodopiam como papel a sério. Zero dependências: o npm do
+     ambiente rebentou e um stand de feira não pode depender disso. */
+  useEffect(() => {
+    if (!premio.ganha) return;
+    dispararConfetes(150);
+    vibrar([18, 40, 26]);
   }, [premio.ganha]);
 
   // derrota: fecha sozinho ao fim de 15 s
+  /* TIMEOUT - o quiosque nunca fica preso.
+     Derrota: 20 s. VITÓRIA: 90 s. Antes a vitória não tinha timeout: se o
+     visitante ganhasse e fosse embora sem a equipa confirmar, o ecrã ficava
+     encravado nesse prémio até alguém reparar. Num dia de feira cheio, isso
+     é o stand parado. */
   useEffect(() => {
-    if (premio.ganha) return;
-    const tempo = setTimeout(aoFechar, 20000);
+    const tempo = setTimeout(aoFechar, premio.ganha ? 90000 : 20000);
     return () => clearTimeout(tempo);
   }, [premio.ganha, aoFechar]);
 
   const nomePremio =
     premio.linha1[idioma] + (premio.linha2 ? " " + premio.linha2[idioma] : "");
 
-  const urlQr =
-    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=8&data=" +
-    encodeURIComponent(QR_URL);
+  /* QR OFICIAL, servido de /public. Antes vinha de api.qrserver.com e
+     desaparecia sem rede - ou seja, o veículo de promoção do destino
+     falhava exactamente nas condições em que as feiras vivem. Sendo a
+     imagem oficial (com o rastreio do Município), também não há risco de
+     apontar para o sítio errado. */
+  const urlQr = "/qr-visitbraga.png";
 
   const urlLegivel = QR_URL.replace(/^https?:\/\/(www\.)?/, "");
 
@@ -135,24 +169,6 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
         </div>
       ) : null}
       {/* chuva de confete (vitória) */}
-      {confetes.length > 0 ? (
-        <div className="confetes" aria-hidden="true">
-          {confetes.map((c, i) => (
-            <i
-              key={i}
-              style={{
-                left: c.esq + "%",
-                width: c.larg,
-                height: c.alt,
-                background: c.cor,
-                animationDelay: c.atraso + "s",
-                animationDuration: c.dur + "s",
-                transform: `rotate(${c.rot}deg)`,
-              }}
-            />
-          ))}
-        </div>
-      ) : null}
 
       {/* Bracvs a festejar ao lado do bilhete: o clímax é dele também */}
       {premio.ganha && !bracvsFalhou ? (
@@ -185,14 +201,23 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
                 <p className="bilhete-rotulo">{mensagem[idioma]}</p>
                 <h2 className="bilhete-premio">{nomePremio}</h2>
                 <p className="bilhete-instrucao">{t("mostraEquipa", idioma)}</p>
+                {/* PREMIR 2 SEGUNDOS: um onClick simples deixava qualquer
+                    visitante queimar o prémio ao tocar por curiosidade. É um
+                    gesto deliberado, com anel de progresso, e só a equipa o faz. */}
                 <button
-                  className="botao-entregue"
-                  onClick={() => {
-                    registarEntrega();
-                    aoFechar();
-                  }}
+                  className={"botao-entregue" + (aConfirmar ? " a-confirmar" : "")}
+                  onPointerDown={comecarConfirmacao}
+                  onPointerUp={pararConfirmacao}
+                  onPointerLeave={pararConfirmacao}
+                  onPointerCancel={pararConfirmacao}
+                  style={{ ["--progresso" as string]: progresso + "%" }}
                 >
-                  {t("entregue", idioma)}
+                  <span className="entregue-anel" aria-hidden="true" />
+                  <span className="entregue-texto">
+                    {aConfirmar
+                      ? t("entregueManter", idioma)
+                      : t("entregue", idioma)}
+                  </span>
                 </button>
               </>
             ) : (

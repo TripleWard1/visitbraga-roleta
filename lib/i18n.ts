@@ -53,6 +53,11 @@ export const T = {
     es: "Muestra esta pantalla al equipo del stand para recibir tu premio",
     en: "Show this screen to our stand team to collect your prize",
   },
+  entregueManter: {
+    pt: "Manter premido…",
+    es: "Mantén pulsado…",
+    en: "Keep holding…",
+  },
   entregue: {
     pt: "✓ Entregue (equipa)",
     es: "✓ Entregado (equipo)",

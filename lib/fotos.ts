@@ -1,21 +1,20 @@
 /**
- * FOTOGRAFIA DO DESTINO - alojada fora do projeto
- * -------------------------------------------------
- * As fotos NÃO vivem em /public (o StackBlitz tem limite de espaço):
- * são servidas por URL. Vantagem extra: trocar as fotos de uma feira
- * para a outra não obriga a novo deploy - muda-se o URL e pronto.
+ * FOTOGRAFIA DO DESTINO - servida de /public (sem terceiros)
+ * As três fotos oficiais já estão em /public/fotos/ (1600×900, JPG
+ * progressivo q80). A app mostra-as com o wi-fi DESLIGADO.
+ * -----------------------------------------------------------
+ * Antes vinham do imgur: serviço de terceiros, sem licença oficial e sem
+ * garantias - e, pior, sem rede não carregavam. A app tem de arrancar,
+ * girar e mostrar fotos com o wi-fi DESLIGADO.
  *
- * ORDEM (confirmada pelo Hugo a partir do ecrã):
- *   wJ7SN6Z = Bom Jesus · Vt4acFK = Museu · IA7y5fO = Sé
+ * FICHEIROS A COLOCAR EM /public/fotos/ (do banco oficial do Município):
+ *   bom-jesus.jpg          1600×900, JPG progressivo, qualidade 80, ≤500 KB
+ *   museu-arqueologia.jpg  1600×900, idem
+ *   se-de-braga.jpg        1600×900, idem
  *
- * ⚠️ REDE: se o wi-fi da feira falhar, as fotos não carregam. A app
- * deteta isso e volta sozinha à versão gráfica (Vermelho Total com o
- * sino) - nunca aparece um espaço vazio nem um ícone de imagem partida
- * no stand. Ver components/ModoMontra.tsx.
- *
- * 💡 A PRAZO: o ideal é alojá-las no portal Visit Braga (ou noutro
- * domínio do Município) em vez do imgur - é serviço de terceiros, sem
- * garantias, e um dia pode simplesmente deixar de servir a imagem.
+ * Recorte 16:9, sem pessoas em primeiro plano, sem céus queimados (o
+ * duotone come o detalhe nas zonas claras). Se faltar alguma, a app salta-a
+ * e volta à versão gráfica - nunca mostra imagem partida.
  */
 
 export const FOTOS_ATIVAS = true;
@@ -27,7 +26,7 @@ export type Foto = {
 
 export const FOTOS: Foto[] = [
   {
-    ficheiro: "https://i.imgur.com/wJ7SN6Z.jpeg",
+    ficheiro: "/fotos/bom-jesus.jpg",
     local: {
       pt: "Bom Jesus do Monte · Património Mundial UNESCO",
       es: "Bom Jesus do Monte · Patrimonio Mundial UNESCO",
@@ -35,7 +34,7 @@ export const FOTOS: Foto[] = [
     },
   },
   {
-    ficheiro: "https://i.imgur.com/Vt4acFK.jpeg",
+    ficheiro: "/fotos/museu-arqueologia.jpg",
     local: {
       pt: "Museu D. Diogo de Sousa · Bracara Augusta",
       es: "Museo D. Diogo de Sousa · Bracara Augusta",
@@ -43,7 +42,7 @@ export const FOTOS: Foto[] = [
     },
   },
   {
-    ficheiro: "https://i.imgur.com/IA7y5fO.jpeg",
+    ficheiro: "/fotos/se-de-braga.jpg",
     local: {
       pt: "Sé de Braga · A catedral mais antiga do país",
       es: "Catedral de Braga · La más antigua del país",

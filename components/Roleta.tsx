@@ -32,6 +32,7 @@ import {
 import { FACTOS } from "@/lib/factos";
 import { PERGUNTA_ORIGEM, MOSTRAR_REGRA } from "@/lib/config";
 import { t, type Idioma } from "@/lib/i18n";
+import { tique, pouso, repique, consolo, vibrar, iniciarAudio } from "@/lib/audio";
 import CartaoResultado from "./CartaoResultado";
 import PerguntaOrigem from "./PerguntaOrigem";
 import Portal from "./Portal";
@@ -40,6 +41,27 @@ const N = PREMIOS.length;
 const SEG = 360 / N;
 const C = 220; // centro do viewBox
 const R = 154; // raio das fatias
+
+/**
+ * TIPOGRAFIA DA RODA - nenhuma legenda pode aparecer invertida
+ * -------------------------------------------------------------
+ * O texto é TANGENCIAL (perpendicular ao raio) e as fatias da metade
+ * inferior levam +180°, o que as põe a direito. Resultado: as oito legendas
+ * leem-se todas, em qualquer posição da roda - era este o tell nº1 de
+ * roleta amadora (no telemóvel via-se "PEGATINA BRACVS" ao contrário).
+ *
+ * O corpo da letra é calculado contra a CORDA disponível na fatia, e é o
+ * ESPANHOL que manda: é ~20% mais longo que o português. Dimensionar pelo
+ * PT era exactamente o que rebentava o layout em ES.
+ */
+const RT = 112; // raio onde assenta o bloco de texto
+const CORDA = 2 * RT * Math.sin(Math.PI / N) * 0.86; // pista útil
+
+function corpo(texto: string, maximo: number, largura: number): number {
+  const cabe = CORDA / (Math.max(1, texto.length) * largura);
+  // arredondar para BAIXO: para cima, o espanhol transbordava por décimas
+  return Math.max(7, Math.min(maximo, Math.floor(cabe * 10) / 10));
+}
 
 /** ponto na circunferência para um ângulo (0° = topo, sentido horário) */
 function ponto(angulo: number, raio: number): [number, number] {
@@ -65,32 +87,6 @@ const ZIGZAG = (() => {
   return partes.join(" ") + " Z";
 })();
 
-/**
- * TIPOGRAFIA RADIAL DA RODA - a correção que mais peso tem
- * ---------------------------------------------------------
- * Antes, o texto era TANGENCIAL (perpendicular ao raio): funciona no
- * topo, mas nas fatias de baixo aparece DE PERNAS PARA O AR. É o tell
- * clássico de roleta feita à pressa - e nenhuma sombra ou gradiente o
- * compensa.
- *
- * Agora o texto corre AO LONGO DO RAIO, do centro para fora, e cada
- * fatia escolhe a orientação que mantém as letras direitas:
- *   - metade direita (0°–180°): θ = mid − 90, texto começa em RAIO_DENTRO
- *   - metade esquerda (180°–360°): θ = mid + 90, texto espelhado
- * Resultado: TODOS os rótulos se leem, em qualquer posição da roda.
- *
- * Bónus: o raio dá mais espaço que a corda, por isso nomes compridos
- * (ES e EN costumam ser mais longos que PT) respiram melhor.
- */
-const RAIO_DENTRO = 76; // onde o texto começa (fora do cubo)
-const RAIO_FORA = 150; // onde não pode passar (dentro do aro)
-const PISTA = RAIO_FORA - RAIO_DENTRO; // ~74 un. de corrida
-
-/** ajusta o corpo até o rótulo caber na pista, seja qual for o idioma */
-function corpoTexto(texto: string, maximo: number, largura: number): number {
-  const estimado = PISTA / (texto.length * largura);
-  return Math.max(7.5, Math.min(maximo, Math.round(estimado * 10) / 10));
-}
 
 function disponivel(p: Premio, stock: Stock): boolean {
   const s = stock[p.id];
@@ -120,9 +116,16 @@ type Props = {
   idioma: Idioma;
   montra: boolean;
   onOcupadaChange: (ocupada: boolean) => void;
+  /** cada fase do giro: a mascote e a iluminação reagem a isto */
+  onFase: (f: "repouso" | "giro" | "suspense" | "vitoria" | "derrota") => void;
 };
 
-export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
+export default function Roleta({
+  idioma,
+  montra,
+  onOcupadaChange,
+  onFase,
+}: Props) {
   /* O ângulo NÃO vive em estado React: a 60 fps, um setState por frame
      obrigaria a re-renderizar 8 fatias + 16 textos + separadores e faz
      o giro gaguejar em tablets medianos. Guardamos o ângulo num ref e
@@ -139,8 +142,10 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
   const aGirarRef = useRef(false);
   const rafRef = useRef<number>(0);
   const suspenseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const audioRef = useRef<AudioContext | null>(null);
   const sinoRef = useRef<SVGGElement | null>(null);
+  const ponteiroRef = useRef<SVGSVGElement | null>(null);
+  const envolventeRef = useRef<HTMLDivElement | null>(null);
+  const [vencedora, setVencedora] = useState(-1);
 
   /** escreve a rotação diretamente no DOM (sem passar pelo React) */
   const aplicarAngulo = useCallback((graus: number) => {
@@ -165,43 +170,13 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
     onOcupadaChange(aGirar || resultado !== null || pedirOrigem);
   }, [aGirar, resultado, pedirOrigem, onOcupadaChange]);
 
-  /* ------------------------------ SONS ------------------------------ */
-  const badalada = useCallback((freq: number, dur = 0.22, vol = 0.05) => {
-    try {
-      if (!audioRef.current) {
-        const Ctx =
-          window.AudioContext ??
-          (window as unknown as { webkitAudioContext: typeof AudioContext })
-            .webkitAudioContext;
-        audioRef.current = new Ctx();
-      }
-      const ctx = audioRef.current;
-      const agora = ctx.currentTime;
-      const parciais: [number, number][] = [
-        [freq, vol],
-        [freq * 2.76, vol * 0.4],
-      ];
-      parciais.forEach((par) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = par[0];
-        gain.gain.setValueAtTime(par[1], agora);
-        gain.gain.exponentialRampToValueAtTime(0.0001, agora + dur);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(agora);
-        osc.stop(agora + dur + 0.02);
-      });
-    } catch {
-      /* som é opcional */
-    }
-  }, []);
+  /* a mascote e a iluminação reagem a cada fase */
+  useEffect(() => {
+    if (aGirar) onFase("giro");
+    else if (resultado) onFase(resultado.ganha ? "vitoria" : "derrota");
+    else onFase("repouso");
+  }, [aGirar, resultado, onFase]);
 
-  const carrilhao = useCallback(() => {
-    [659, 784, 988, 1319].forEach((f, i) =>
-      setTimeout(() => badalada(f, 0.5, 0.06), i * 140)
-    );
-  }, [badalada]);
 
   const balancarSino = useCallback(() => {
     const el = sinoRef.current;
@@ -257,87 +232,135 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
     const delta = voltas * 360 + ((alvoBase - atualNorm + 360) % 360);
     const duracao = 5400 + Math.random() * 900;
 
+    /* ═══ ENCENAÇÃO EM 7 TEMPOS ═══
+       1. ANTECIPAÇÃO: a roda RECUA 5° antes de arrancar - como um braço a
+          armar o golpe. É o detalhe que dá peso ao gesto.
+       2. aceleração com desfoque de movimento nas fatias
+       3. zoom de câmara nos últimos 2 s
+       4. desaceleração com tiques FÍSICOS: o ponteiro bate e vibra
+       5. paragem → suspense
+       6. badalada + confetes + bilhete
+       7. a mascote acompanha cada fase (ver Bracvs.tsx) */
+    const ANTECIPACAO = 300;
+    const RECUO = 5;
+
     const t0 = performance.now();
     let ultimaFatia = Math.floor(atualNorm / SEG);
 
     const passo = (agora: number) => {
-      const te = Math.min(1, (agora - t0) / duracao);
+      const decorrido = agora - t0;
+
+      // 1. antecipação: recua 5° e volta, antes de disparar
+      if (decorrido < ANTECIPACAO) {
+        const a = decorrido / ANTECIPACAO;
+        aplicarAngulo(inicio - RECUO * Math.sin(a * Math.PI));
+        rafRef.current = requestAnimationFrame(passo);
+        return;
+      }
+
+      const te = Math.min(1, (decorrido - ANTECIPACAO) / duracao);
       const atual = inicio + delta * easeOutQuart(te);
       aplicarAngulo(atual);
+
+      // 2. desfoque de movimento proporcional à velocidade angular
+      const velocidade = (1 - te) ** 3; // 1 → 0
+      const disco = fatiasRef.current;
+      if (disco) {
+        disco.style.filter =
+          velocidade > 0.06 ? `blur(${(velocidade * 2.6).toFixed(2)}px)` : "none";
+      }
+
+      // 3. zoom de câmara nos últimos 2 s (a roda "aproxima-se")
+      const env = envolventeRef.current;
+      if (env) {
+        const restante = (1 - te) * duracao;
+        const zoom = restante < 2000 ? 1 + (1 - restante / 2000) * 0.05 : 1;
+        env.style.transform = `scale(${zoom.toFixed(4)})`;
+      }
 
       const fatia = Math.floor((((atual % 360) + 360) % 360) / SEG);
       if (fatia !== ultimaFatia) {
         ultimaFatia = fatia;
-        badalada(880 + Math.random() * 80, 0.16, 0.035);
+        // 4. tique físico: som + badalo do sino + vibração real do ponteiro
+        tique(te);
         balancarSino();
+        const pt = ponteiroRef.current;
+        if (pt && typeof pt.animate === "function") {
+          try {
+            pt.animate(
+              [
+                { transform: "translateX(-50%) rotate(0deg)" },
+                { transform: "translateX(-50%) rotate(6deg)" },
+                { transform: "translateX(-50%) rotate(-2deg)" },
+                { transform: "translateX(-50%) rotate(0deg)" },
+              ],
+              { duration: 170, easing: "ease-out" }
+            );
+          } catch {}
+        }
+        if (te > 0.82) vibrar(8); // só na reta final, para não irritar
       }
 
       if (te < 1) {
         rafRef.current = requestAnimationFrame(passo);
       } else {
-        /* ENCENAÇÃO EM 3 TEMPOS
-           1) parar: a roda imobiliza, "toc" grave de assentamento,
-              o stock visível revela-se (fatia esgotada desvanece)     */
+        /* 5. PARAGEM: limpa desfoque e zoom, a roda assenta */
+        const disco2 = fatiasRef.current;
+        if (disco2) disco2.style.filter = "none";
+        const env2 = envolventeRef.current;
+        if (env2) env2.style.transform = "scale(1)";
+
+        pouso();
+        vibrar(30);
         setAGirar(false);
         setFacto(-1);
-        setStockVisivel({ ...stockRef.current });
-        badalada(523, 0.34, 0.05);
+        setStockVisivel({ ...stockRef.current }); // só agora a fatia apaga
+        setVencedora(vencedor);                   // halo a pulsar
+        onFase("suspense");                       // tudo congela
 
         const premio = PREMIOS[vencedor];
         registarGiro(premio.ganha); // alimenta o relatório da feira
-        /* 2) suspense: ~350 ms de silêncio absoluto (o ref continua
-              true para bloquear toques durante a pausa)               */
+
+        /* 6. SUSPENSE de ~500 ms e só então a revelação */
         suspenseRef.current = setTimeout(() => {
-          /* 3) explosão: carrilhão + bilhete + confetes de uma vez   */
           aGirarRef.current = false;
-          if (premio.ganha) carrilhao();
+          if (premio.ganha) repique();
+          else consolo();
           setResultado(premio);
-        }, premio.ganha ? 360 : 240);
+        }, premio.ganha ? 500 : 320);
       }
     };
 
     rafRef.current = requestAnimationFrame(passo);
-  }, [aplicarAngulo, badalada, balancarSino, carrilhao]);
+  }, [aplicarAngulo, balancarSino, onFase]);
 
-  const aoGirarClicado = useCallback(() => {
-    if (aGirarRef.current || resultado) return;
-    if (PERGUNTA_ORIGEM) {
-      setPedirOrigem(true);
-    } else {
-      executarGiro();
-    }
+  /* A PÁGINA é dona do botão (para a mascote poder viver entre a roda e a
+     ação, sem sobreposições). Pede o giro por evento: menos acoplamento. */
+  useEffect(() => {
+    const pedido = () => {
+      if (aGirarRef.current || resultado) return;
+      iniciarAudio(); // política dos browsers: só depois de um toque
+      if (PERGUNTA_ORIGEM) setPedirOrigem(true);
+      else executarGiro();
+    };
+    window.addEventListener("roda:girar", pedido);
+    return () => window.removeEventListener("roda:girar", pedido);
   }, [resultado, executarGiro]);
 
-  const fecharResultado = useCallback(() => setResultado(null), []);
+  const fecharResultado = useCallback(() => {
+    setResultado(null);
+    setVencedora(-1);
+  }, []);
 
   const emRepouso = !aGirar && !montra && !resultado;
 
   /* ----------------------------- DESENHO ----------------------------- */
   return (
     <section className="palco">
-      <div className={`roda-envolvente${montra ? " roda-montra" : ""}`}>
-        {/* Bracvs ancorado à roleta: nunca acima do tamanho nativo do
-            PNG (272 px), assente na linha de chão da roda */}
-        <div
-          className={
-            "bracvs-poiso" +
-            (aGirar ? " festejar" : "") +
-            (aGirar && facto >= 0 ? " com-postal" : "")
-          }
-        >
-          {/* espelho horizontal: o Bracvs olha PARA a roleta, não para fora */}
-          <div className="bracvs-virar">
-            <img
-              src="/mascote-bracvs.png"
-              alt="Bracvs, a mascote de Braga"
-              className="bracvs-img"
-              width={272}
-              height={442}
-            />
-          </div>
-          <div className="bracvs-sombra" />
-        </div>
-
+      <div
+        ref={envolventeRef}
+        className={`roda-envolvente${montra ? " roda-montra" : ""}`}
+      >
         <svg
           className={`roda-svg${emRepouso ? " roda-repouso" : ""}`}
           viewBox="0 0 440 440"
@@ -468,17 +491,16 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
               const heroi = p.destaque === true && !esgotado;
               const vermelha = i % 2 === 0;
               const mid = i * SEG + SEG / 2;
-              const fs1 = corpoTexto(p.linha1[idioma], 14.5, 0.68);
-              const fs2 = p.linha2
-                ? corpoTexto(p.linha2[idioma], 11.5, 0.66)
-                : 0;
+              const fs1 = corpo(p.linha1[idioma], 15, 0.66);
+              const fs2 = p.linha2 ? corpo(p.linha2[idioma], 11.5, 0.62) : 0;
 
-              /* orientação radial: a metade esquerda espelha, para as
-                 letras nunca ficarem invertidas */
-              const espelhar = mid > 180;
-              const theta = espelhar ? mid + 90 : mid - 90;
-              const x = espelhar ? C - RAIO_DENTRO : C + RAIO_DENTRO;
-              const ancora = espelhar ? "end" : "start";
+              /* metade inferior (90°–270°): +180° para o texto ficar a
+                 direito. As linhas trocam de posição antes da rotação, para
+                 que depois de rodadas fiquem pela ordem certa. */
+              const virar = mid > 90 && mid < 270;
+              const yc = C - RT;
+              const y1 = virar ? yc + 6 : yc - 6;
+              const y2 = virar ? yc - 9 : yc + 9;
               const classeCor = esgotado
                 ? " texto-esgotado"
                 : vermelha || heroi
@@ -503,38 +525,54 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
                     fill="#e7e3db"
                     className={esgotado ? "veu-esgotado ativo" : "veu-esgotado"}
                   />
+                  {/* HALO: a fatia vencedora pulsa no suspense */}
+                  {vencedora === i ? (
+                    <path
+                      d={caminhoFatia(i)}
+                      className="fatia-vencedora"
+                      fill="none"
+                      stroke="#fff"
+                      strokeWidth="3"
+                    />
+                  ) : null}
 
-                  <g transform={`rotate(${theta} ${C} ${C})`}>
-                    {heroi ? (
-                      <text
-                        x={espelhar ? x + 10 : x - 10}
-                        y={C + 4}
-                        textAnchor="middle"
-                        className="fatia-estrela"
-                      >
-                        ★
-                      </text>
-                    ) : null}
-                    <text
-                      x={x}
-                      y={p.linha2 ? C - 4 : C + 4}
-                      textAnchor={ancora}
-                      style={{ fontSize: fs1 }}
-                      className={"fatia-texto" + classeCor}
+                  <g transform={`rotate(${mid} ${C} ${C})`}>
+                    <g
+                      transform={
+                        virar ? `rotate(180 ${C} ${yc})` : undefined
+                      }
                     >
-                      {p.linha1[idioma]}
-                    </text>
-                    {p.linha2 ? (
+                      {heroi ? (
+                        <text
+                          x={C}
+                          y={virar ? yc + 22 : yc - 22}
+                          textAnchor="middle"
+                          className="fatia-estrela"
+                        >
+                          ★
+                        </text>
+                      ) : null}
                       <text
-                        x={x}
-                        y={C + 10}
-                        textAnchor={ancora}
-                        style={{ fontSize: fs2 }}
-                        className={"fatia-texto fatia-texto-2" + classeCor}
+                        x={C}
+                        y={p.linha2 ? y1 : yc + 3}
+                        textAnchor="middle"
+                        style={{ fontSize: fs1 }}
+                        className={"fatia-texto" + classeCor}
                       >
-                        {p.linha2[idioma]}
+                        {p.linha1[idioma]}
                       </text>
-                    ) : null}
+                      {p.linha2 ? (
+                        <text
+                          x={C}
+                          y={y2}
+                          textAnchor="middle"
+                          style={{ fontSize: fs2 }}
+                          className={"fatia-texto fatia-texto-2" + classeCor}
+                        >
+                          {p.linha2[idioma]}
+                        </text>
+                      ) : null}
+                    </g>
                   </g>
                 </g>
               );
@@ -638,7 +676,12 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
         </svg>
 
         {/* PONTEIRO físico: bisel próprio, sino oficial a badalar */}
-        <svg className="ponteiro-sino" viewBox="0 0 96 132" aria-hidden="true">
+        <svg
+          ref={ponteiroRef}
+          className="ponteiro-sino"
+          viewBox="0 0 96 132"
+          aria-hidden="true"
+        >
           <defs>
             <linearGradient id="ponteiroGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0%" stopColor="#ff1e13" />
@@ -669,29 +712,6 @@ export default function Roleta({ idioma, montra, onOcupadaChange }: Props) {
             </g>
           </g>
         </svg>
-      </div>
-
-      {/* postal com curiosidade durante o giro / botão GIRAR */}
-      <div className="zona-postal" aria-live="polite">
-        {aGirar && facto >= 0 ? (
-          <div className="postal" key={facto}>
-            <span className="postal-selo">{t("sabiasQue", idioma)}</span>
-            <p>{FACTOS[facto][idioma]}</p>
-          </div>
-        ) : (
-          <div className="zona-botao">
-            <button
-              className="botao-girar"
-              onClick={aoGirarClicado}
-              disabled={aGirar || resultado !== null}
-            >
-              {t("girar", idioma)}
-            </button>
-            {MOSTRAR_REGRA ? (
-              <p className="regra-casa">{t("regraCasa", idioma)}</p>
-            ) : null}
-          </div>
-        )}
       </div>
 
       {/* overlays em PORTAL: cobrem o ecrã inteiro, sem o cabeçalho,

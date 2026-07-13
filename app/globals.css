@@ -1,212 +1,123 @@
-/* =====================================================================
-   RODA DA SORTE VISIT BRAGA - "ZIGZAG BRAGA" · PASSAGEM DE REFINAMENTO
-   ---------------------------------------------------------------------
-   Princípios desta passagem (o que separa isto de um flyer):
-   1. CONTENÇÃO - o vermelho da marca concentra-se na roleta, no botão
-      e na base; o resto do ecrã respira em neutros quentes
-   2. PROFUNDIDADE - gradientes subtis, sombras com queda realista e
-      luz ambiente; nada de fills chapados com contornos grossos
-   3. PRECISÃO - hairlines, detalhes maquinados (a linha zigzag do
-      escadório), tipografia com hierarquia clara
-   O vermelho puro #FE0000 fica reservado a acentos; superfícies
-   grandes usam a rampa #FE0000 → #C50007 para não vibrar no ecrã.
-   ===================================================================== */
+/* ═════════════════════════════════════════════════════════════════════
+   RODA DA SORTE VISIT BRAGA - CSS MOBILE-FIRST
+   ─────────────────────────────────────────────────────────────────────
+   O que este ficheiro corrige, e que o anterior violava:
+
+   1. MOBILE-FIRST E FLUIDO. Zero px fixos no layout: clamp(), min(), %,
+      vw/vh. A roda é min(92vw, 68vh, 580px).
+   2. NADA EXCEDE 100% DE LARGURA, EM NENHUM IDIOMA. O espanhol é ~20%
+      mais longo que o português e era ele que rebentava ("1 GIRO POR
+      VISITANTE · PREMIOS HASTA AGOTAR EXISTENCIAS" saía cortado).
+   3. FLUXO NORMAL (flex/grid). Absoluto só para decoração (o fundo).
+   4. Em mobile a página ROLA - não se espreme tudo dentro de 100vh.
+   5. A MASCOTE TEM CÉLULA PRÓPRIA: nunca sobrepõe a roda e NUNCA é
+      escondida. Em ecrãs pequenos encolhe, e pronto.
+
+   Luz única topo-esquerda. Escala de espaço de 8.
+   ═════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --vermelho: #fe0000;          /* acento oficial Visit Braga */
-  --vermelho-superficie: #e00009; /* superfícies grandes */
+  --vermelho: #fe0000;
+  --vermelho-superficie: #e00009;
   --vermelho-escuro: #c50007;
   --branco: #ffffff;
-  --fundo: #faf8f4;             /* neutro quente luminoso */
+  --fundo: #faf8f4;
   --marfim: #f4f0e8;
   --preto: #1a1a1c;
   --texto-suave: #6d675d;
   --linha: rgba(26, 26, 28, 0.1);
-  --display: "Archivo Black", "Arial Black", sans-serif;
-  --corpo: "Inter", system-ui, sans-serif;
-  /* easing intencional - nunca linear */
+  /* fontes servidas localmente pelo next/font (ver app/layout.tsx):
+     sem rede, o design continua igual - antes colapsava em Arial */
+  --display: var(--fonte-display), "Arial Black", sans-serif;
+  --corpo: var(--fonte-corpo), system-ui, sans-serif;
   --ease-expressivo: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-suave: cubic-bezier(0.45, 0, 0.25, 1);
-  /* escala de espaçamento: múltiplos de 8 */
   --e1: 8px; --e2: 16px; --e3: 24px; --e4: 32px; --e5: 40px;
+  /* A RODA: fluida, limitada pelo mais apertado dos três */
+  --roda: min(92vw, 68vh, 580px);
 }
 
-/* ------------------------------ base ------------------------------ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  height: 100%;
-  overscroll-behavior: none;
+html, body {
+  min-height: 100%;
+  overflow-x: hidden;   /* nada transborda, em nenhum idioma */
+  max-width: 100%;
+  overscroll-behavior-y: none;
   touch-action: manipulation;
 }
 
 body {
   font-family: var(--corpo);
   color: var(--preto);
-  /* PAREDE do palco: um plano com luz vinda de cima-esquerda e os cantos
-     a fechar. Deixa de ser um gradiente decorativo e passa a ser espaço. */
-  background:
-    radial-gradient(120% 85% at 36% 8%, #fffefb 0%, #f7f2e9 46%, #ece5d8 100%);
+  background: var(--fundo);
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* grão de papel fino (~3%) - materialidade do fundo */
-body::before {
+button { font-family: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 3px; }
+img { display: block; max-width: 100%; }
+
+/* ══════════════ FUNDO - a fórmula do cartaz ══════════════ */
+
+.fundo { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.fundo-svg { width: 100%; height: 100%; display: block; }
+
+/* grão de impressão (3%) por cima das silhuetas */
+.fundo-grao {
+  position: absolute; inset: 0; opacity: 0.6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* cone de luz sobre a roda + vinheta: limpa o centro do cartaz */
+/* a luz do palco lava o centro e as silhuetas respiram nas margens */
+.fundo-creme::after {
   content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(46% 42% at 50% 42%, rgba(255,255,255,0.95) 0%, rgba(255,253,247,0.6) 42%, rgba(255,250,240,0) 74%),
+    radial-gradient(130% 110% at 50% 45%, transparent 52%, rgba(86, 58, 46, 0.09) 100%);
 }
 
-/* vinheta suave a focar o centro */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    135% 115% at 50% 44%,
-    transparent 58%,
-    rgba(86, 58, 46, 0.08) 100%
-  );
-}
+/* ══════════════ ESTRUTURA (fluxo, não absoluto) ══════════════ */
 
-button {
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: inherit;
-}
-
-button:focus-visible,
-input:focus-visible {
-  outline: 3px solid var(--vermelho);
-  outline-offset: 3px;
-}
-
-img {
-  display: block;
-}
-
-/* ---------------------------- estrutura ---------------------------- */
-
-/* GRELHA DA PÁGINA: 4 linhas que reservam sempre o seu espaço.
-   cabeçalho (auto) · palco (1fr, absorve a folga) · selos (auto) · rodapé (auto)
-   Nada é `fixed`, logo nada tapa nada - em qualquer formato. */
 .pagina {
   position: relative;
-  /* altura EXATA do ecrã: o grid não pode crescer, e por isso nada é
-     cortado pelo overflow. A roda adapta-se ao espaço que sobra. */
-  height: 100dvh;
   min-height: 100dvh;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  justify-items: center;
-  padding: var(--e2) var(--e2) 0;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-/* CHÃO: um plano em perspetiva, mais quente e mais escuro que a parede.
-   O encontro entre os dois cria um HORIZONTE - é isto que dá espaço à
-   cena e faz a roda e o Bracvs assentarem em vez de flutuarem no nada. */
-.pagina::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 34%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    /* sombra do encontro parede/chão */
-    linear-gradient(180deg, rgba(120, 96, 66, 0.16) 0%, transparent 14%),
-    /* o plano do chão, a escurecer para a frente */
-    linear-gradient(180deg, #f0eadd 0%, #e6dece 55%, #ddd3c0 100%);
-}
-
-/* LUZ DE PROJETOR sobre a roda: um cone suave que a destaca do fundo.
-   É a razão pela qual, num palco, o objeto principal se lê de longe. */
-.pagina::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: -8%;
-  width: min(150vh, 1300px);
-  height: 118%;
-  transform: translateX(-50%);
-  z-index: 0;
-  pointer-events: none;
-  /* mais contida: só realça a zona da roda, já não apaga o pórtico */
-  background: radial-gradient(
-    38% 32% at 50% 40%,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 253, 246, 0.22) 45%,
-    rgba(255, 250, 240, 0) 72%
-  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 2vh, 20px);
+  padding: clamp(10px, 2.5vw, 20px) clamp(12px, 3vw, 24px) 0;
+  max-width: 100%;
 }
 
 .cabecalho {
   position: relative;
-  z-index: 2;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.4vh, 12px);
   width: 100%;
-  padding-top: 6px;
+  text-align: center;
 }
 
-.cabecalho-logo {
-  height: clamp(38px, 7vmin, 60px);
-  width: auto;
-  margin: 0 auto;
-}
+.logo { height: clamp(28px, 7vw, 52px); width: auto; }
 
-.cabecalho-tagline {
+.tagline {
   font-weight: 600;
-  font-size: clamp(0.72rem, 1.9vmin, 0.92rem);
-  letter-spacing: 0.22em;
+  font-size: clamp(0.6rem, 2.4vw, 0.86rem);
+  letter-spacing: clamp(0.08em, 0.5vw, 0.2em);
   text-transform: uppercase;
   color: var(--texto-suave);
-  margin-top: 8px;
+  max-width: 100%;
 }
 
-/* divisor zigzag fino: a assinatura do escadório, discreta */
-.cabecalho-zig {
-  width: 132px;
-  height: 8px;
-  margin: 10px auto 0;
-  background: var(--vermelho);
-  clip-path: polygon(
-    0 100%, 8.33% 0, 16.67% 100%, 25% 0, 33.33% 100%, 41.67% 0,
-    50% 100%, 58.33% 0, 66.67% 100%, 75% 0, 83.33% 100%, 91.67% 0,
-    100% 100%, 100% calc(100% - 2.5px), 91.67% 2.5px, 83.33% calc(100% - 2.5px),
-    75% 2.5px, 66.67% calc(100% - 2.5px), 58.33% 2.5px, 50% calc(100% - 2.5px),
-    41.67% 2.5px, 33.33% calc(100% - 2.5px), 25% 2.5px, 16.67% calc(100% - 2.5px),
-    8.33% 2.5px, 0 calc(100% - 2.5px)
-  );
-}
-
-/* seletor de idioma - discreto e sempre presente */
 .seletor-idioma {
-  position: fixed;
-  top: 14px;
-  right: 14px;
-  z-index: 60;
-  display: flex;
-  gap: 3px;
-  padding: 4px;
+  display: flex; gap: 3px; padding: 4px;
   border-radius: 999px;
   background: var(--branco);
   border: 1px solid var(--linha);
@@ -214,484 +125,258 @@ img {
 }
 
 .seletor-idioma-botao {
-  font-weight: 700;
-  font-size: clamp(0.82rem, 1.9vmin, 0.95rem);
-  letter-spacing: 0.04em;
-  color: var(--preto);
-  padding: 9px 15px;
+  padding: clamp(7px, 1.6vw, 10px) clamp(12px, 3vw, 17px);
   border-radius: 999px;
+  font-weight: 700;
+  font-size: clamp(0.78rem, 2.6vw, 0.95rem);
+  letter-spacing: 0.05em;
+  color: var(--preto);
   transition: background 0.18s var(--ease-suave), color 0.18s var(--ease-suave);
 }
+.seletor-idioma-botao.ativo { background: var(--vermelho-superficie); color: var(--branco); }
 
-.seletor-idioma-botao.ativo {
-  background: var(--vermelho-superficie);
-  color: var(--branco);
-}
-
-/* ------------------------------ palco ------------------------------ */
-
+/* ── PALCO: coluna simples.
+   A roda fica SEMPRE centrada (é filha de um flex column centrado).
+   Por baixo, uma linha: [Bracvs] [botão GIRAR].
+   A mesma disposição em mobile e desktop - a grelha de 3 colunas do
+   desktop estava a empurrar a roda para a esquerda. Simplicidade ganha. */
 .palco {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(var(--e1), 1.6vmin, var(--e2));
+  gap: clamp(8px, 2vh, 20px);
+  width: 100%;
+  flex: 1;
   justify-content: center;
+}
+
+.celula-roda { display: flex; justify-content: center; width: 100%; }
+
+/* a linha da ação: mascote encostada ao botão, a olhar para a roda */
+.linha-acao {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: clamp(6px, 2vw, 24px);
   width: 100%;
-  min-height: 0;
-  /* TAMANHO DA RODA - a regra de ouro deste ecrã.
-     Não se mede contra o ecrã (era esse o bug: a roda empurrava o plinto
-     para fora e o overflow comia-o). Mede-se contra o que SOBRA depois do
-     cabeçalho (~130px), da zona do botão (~120px) e do plinto (~90px). */
-  --roda: min(92vw, calc(100dvh - 350px), 620px);
+  max-width: min(100%, 640px);
 }
 
-/* A ROLETA É A PROTAGONISTA */
-.roda-envolvente {
-  position: relative;
-  width: var(--roda);
-  z-index: 1;
+.acao-coluna {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.2vh, 10px);
+  flex: 1;
+  min-width: 0;   /* deixa encolher: sem isto o ES transbordava */
 }
 
-/* luz ambiente quente por baixo da roleta (em vez de sunburst) */
-.roda-envolvente::before {
-  content: "";
-  position: absolute;
-  inset: -12%;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(254, 0, 0, 0.09) 0%,
-    rgba(254, 0, 0, 0.03) 48%,
-    transparent 68%
-  );
-  z-index: 0;
-  pointer-events: none;
-}
+/* ── a roda ── */
+.roda-envolvente { position: relative; width: var(--roda); max-width: 100%; }
 
-.roda-svg {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: auto;
-  display: block;
-  /* só definição de contorno - a sombra "no chão" é a elipse abaixo */
-  filter: drop-shadow(2px 3px 4px rgba(26, 26, 28, 0.1));
-}
-
-/* SOMBRA PROJETADA no chão do palco: elipse achatada, deslocada para a
-   direita (a luz vem de cima-esquerda) e a esbater-se com a distância.
-   É o que faz a roda parecer POUSADA em vez de colada ao fundo. */
 .roda-envolvente::after {
   content: "";
   position: absolute;
-  left: 6%;
-  right: -2%;
-  bottom: -4%;
-  height: 9%;
+  left: 6%; right: -2%; bottom: -3%;
+  height: 7%;
   border-radius: 50%;
-  background: radial-gradient(
-    ellipse at 46% 45%,
-    rgba(74, 52, 30, 0.34) 0%,
-    rgba(74, 52, 30, 0.16) 42%,
-    rgba(74, 52, 30, 0.05) 66%,
-    transparent 78%
-  );
-  filter: blur(14px);
+  background: radial-gradient(ellipse at 46% 45%,
+    rgba(74, 52, 30, 0.3) 0%, rgba(74, 52, 30, 0.13) 45%, transparent 76%);
+  filter: blur(12px);
   z-index: -1;
-  pointer-events: none;
 }
 
-/* micro-oscilação em repouso: ±1°, como se tivesse acabado de ser tocada */
-.roda-repouso {
-  animation: repousoOscila 9s var(--ease-suave) infinite;
+.roda-svg {
+  width: 100%; height: auto; display: block;
+  filter: drop-shadow(2px 4px 8px rgba(26, 26, 28, 0.16));
 }
 
+.roda-repouso { animation: repousoOscila 9s var(--ease-suave) infinite; }
 @keyframes repousoOscila {
   0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(0.9deg); }
-  65% { transform: rotate(-0.7deg); }
+  30% { transform: rotate(0.8deg); }
+  65% { transform: rotate(-0.6deg); }
 }
 
-.roda-montra .roda-svg {
-  animation: giraLenta 26s linear infinite;
-}
+.roda-montra .roda-svg { animation: giraLenta 26s linear infinite; }
+@keyframes giraLenta { to { transform: rotate(360deg); } }
 
-@keyframes giraLenta {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.zigzag-anel.a-pulsar {
-  animation: zigzagPulsa 0.9s ease-in-out infinite;
-}
-
-@keyframes zigzagPulsa {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
-/* ponteiro sóbrio */
 .ponteiro-sino {
   position: absolute;
-  top: -3.6%;
-  left: 50%;
+  top: -3.6%; left: 50%;
   transform: translateX(-50%);
   width: 14%;
-  height: auto;
   z-index: 3;
-  filter: drop-shadow(0 4px 7px rgba(26, 26, 28, 0.28));
+  filter: drop-shadow(2px 4px 7px rgba(26, 26, 28, 0.3));
   pointer-events: none;
 }
 
-/* texto RADIAL das fatias: corre ao longo do raio, sempre direito.
-   O corpo é calculado por rótulo (ver corpoTexto em Roleta.tsx). */
-.fatia-texto {
-  font-family: var(--corpo);
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  dominant-baseline: middle;
-}
+.zigzag-anel.a-pulsar { animation: zigPulsa 0.9s ease-in-out infinite; }
+@keyframes zigPulsa { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-.fatia-texto-2 {
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  opacity: 0.92;
-}
-
-.texto-branco { fill: #ffffff; }
+.fatia-texto { font-family: var(--corpo); font-weight: 800; letter-spacing: 0.04em; }
+.fatia-texto-2 { font-weight: 600; letter-spacing: 0.08em; opacity: 0.92; }
+.texto-branco { fill: #fff; }
 .texto-preto { fill: var(--preto); }
 .texto-esgotado { fill: #8b867c; }
-
+.fatia-estrela { font-size: 12px; fill: #fff; }
 .cubo-texto {
-  font-family: var(--corpo);
-  font-weight: 700;
-  font-size: 9.5px;
-  letter-spacing: 0.32em;
-  fill: var(--vermelho-escuro);
+  font-family: var(--corpo); font-weight: 700; font-size: 9.5px;
+  letter-spacing: 0.3em; fill: var(--vermelho-escuro);
 }
+.veu-esgotado { opacity: 0; transition: opacity 1s ease 0.2s; pointer-events: none; }
+.veu-esgotado.ativo { opacity: 0.96; }
+.fatia-heroi { animation: heroiBrilha 2.8s var(--ease-suave) infinite; }
+@keyframes heroiBrilha { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
 
-/* PRÉMIO-HERÓI: a fatia que cria fila no stand */
-.fatia-heroi {
-  animation: heroiBrilha 2.8s var(--ease-suave) infinite;
-}
-
-@keyframes heroiBrilha {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.16); }
-}
-
-.fatia-estrela {
-  font-size: 12px;
-  fill: #ffffff;
-  opacity: 0.95;
-  dominant-baseline: middle;
-}
-
-.veu-esgotado {
-  opacity: 0;
-  transition: opacity 1s ease 0.2s;
-  pointer-events: none;
-}
-
-.veu-esgotado.ativo {
-  opacity: 0.96;
-}
-
-/* --------------------- Bracvs ancorado à roleta -------------------- */
-
-/* mascote ancorada à roda, dentro do palco (nunca invade selos/rodapé) */
-.bracvs-poiso {
-  position: absolute;
-  left: -15%;
-  bottom: 2%;
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* espelho horizontal: virado para a roleta (as animações vivem na img,
-   o espelho vive aqui - não se anulam) */
-.bracvs-virar {
-  transform: scaleX(-1);
-}
-
-.bracvs-img {
+/* ── BRACVS: célula própria, nunca escondido ── */
+.bracvs {
   position: relative;
-  z-index: 1;
-  /* NUNCA acima do tamanho nativo do PNG (272×442): sem desfoque */
-  height: min(calc(var(--roda) * 0.58), 442px);
-  max-width: 272px;
-  width: auto;
-  transform-origin: 50% 100%;
-  animation: respirar 3.4s var(--ease-suave) infinite;
-}
-
-/* sombra de contacto: núcleo escuro sob os pés, a desvanecer depressa */
-.bracvs-sombra {
-  position: absolute;
-  left: 54%;
-  bottom: -5px;
-  transform: translateX(-50%);
-  width: 68%;
-  height: 13px;
-  border-radius: 50%;
-  /* mesma luz, mesmo chão: sombra deslocada para a direita e a esbater */
-  background: radial-gradient(
-    ellipse at 44% 44%,
-    rgba(74, 52, 30, 0.46) 0%,
-    rgba(74, 52, 30, 0.18) 44%,
-    transparent 72%
-  );
-  filter: blur(5px);
-  animation: sombraRespira 3.4s var(--ease-suave) infinite;
-}
-
-@keyframes respirar {
-  0%, 100% { transform: scaleY(1) rotate(0deg); }
-  50% { transform: scaleY(1.016) rotate(-0.5deg); }
-}
-
-@keyframes sombraRespira {
-  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 1; }
-  50% { transform: translateX(-50%) scaleX(0.96); opacity: 0.85; }
-}
-
-.bracvs-poiso.festejar .bracvs-img {
-  animation: festejar 0.55s ease-in-out infinite;
-}
-
-.bracvs-poiso.festejar .bracvs-sombra {
-  animation: sombraFesteja 0.55s ease-in-out infinite;
-}
-
-@keyframes festejar {
-  0%, 100% { transform: translateY(0) rotate(-1.6deg); }
-  50% { transform: translateY(-13%) rotate(1.6deg); }
-}
-
-@keyframes sombraFesteja {
-  0%, 100% { transform: translateX(-50%) scaleX(1); opacity: 1; }
-  50% { transform: translateX(-50%) scaleX(0.72); opacity: 0.5; }
-}
-
-/* --------------------- botão girar / postal ------------------------ */
-
-.zona-postal {
-  min-height: clamp(86px, 13vmin, 116px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: relative;
-  z-index: 3;
-  padding-bottom: 0;
-}
-
-/* botão + regra da casa, empilhados e centrados */
-.zona-botao {
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--e1);
+  pointer-events: none;
 }
 
-/* regra da casa: poupa ao staff repetir isto 400 vezes por dia */
-.regra-casa {
-  font-size: clamp(0.68rem, 1.7vmin, 0.8rem);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--texto-suave);
+.bracvs-corpo { transform-origin: 50% 100%; animation: respira 3.6s var(--ease-suave) infinite; }
+
+.bracvs img {
+  /* nunca acima do nativo (272px): sem desfoque. Encolhe, não desaparece. */
+  height: clamp(84px, 22vh, 260px);
+  width: auto;
+  max-width: 272px;
+  transform: scaleX(-1);   /* olha para a roda */
 }
 
-/* grande, tátil, com física: idle pulsa subtilmente, hover eleva,
-   press DESCE e a sombra encurta (profundidade real) */
+.bracvs-sombra {
+  display: block;
+  width: 64%; height: 10px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 46% 45%,
+    rgba(74, 52, 30, 0.4) 0%, rgba(74, 52, 30, 0.14) 46%, transparent 72%);
+  filter: blur(4px);
+  transition: transform 0.25s var(--ease-suave), opacity 0.25s var(--ease-suave);
+}
+
+@keyframes respira {
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-3px) scaleY(1.012); }
+}
+
+/* GIRO: mais presente, não menos */
+.bracvs-giro .bracvs-corpo { animation: bracvsSalta 0.5s var(--ease-suave) infinite; }
+.bracvs-giro .bracvs-sombra { animation: sombraSalta 0.5s var(--ease-suave) infinite; }
+@keyframes bracvsSalta {
+  0%, 100% { transform: translateY(0) rotate(-2.5deg); }
+  50% { transform: translateY(-11%) rotate(2.5deg); }
+}
+@keyframes sombraSalta {
+  0%, 100% { transform: scaleX(1); opacity: 1; }
+  50% { transform: scaleX(0.7); opacity: 0.5; }
+}
+
+/* SUSPENSE: congela e encolhe-se */
+.bracvs-suspense .bracvs-corpo {
+  animation: none;
+  transform: translateY(4px) scale(0.96);
+  transition: transform 0.25s var(--ease-expressivo);
+}
+
+/* VITÓRIA: festeja aos pulos */
+.bracvs-vitoria .bracvs-corpo { animation: bracvsFesteja 0.45s var(--ease-suave) infinite; }
+@keyframes bracvsFesteja {
+  0%, 100% { transform: translateY(0) rotate(-4deg) scale(1); }
+  50% { transform: translateY(-18%) rotate(4deg) scale(1.04); }
+}
+
+/* DERROTA: encolhe os ombros */
+.bracvs-derrota .bracvs-corpo {
+  animation: none;
+  transform: translateY(6px) rotate(-3deg) scale(0.97);
+  transition: transform 0.4s var(--ease-suave);
+}
+
+/* ── AÇÃO ── */
 .botao-girar {
   position: relative;
   overflow: hidden;
+  width: 100%;
+  max-width: min(100%, 420px);
   font-family: var(--display);
-  font-size: clamp(1.7rem, 5.6vmin, 2.7rem);
+  font-size: clamp(1.3rem, 6vw, 2.5rem);
   letter-spacing: 0.06em;
   color: var(--branco);
   background: linear-gradient(160deg, #ff1207 0%, #e00009 55%, #cd0007 100%);
   border-radius: 999px;
-  padding: clamp(16px, 2.8vmin, 24px) clamp(64px, 12vmin, 112px);
-  box-shadow:
-    inset 1.5px 2px 0 rgba(255, 255, 255, 0.3),
-    inset -1px -2px 0 rgba(120, 0, 4, 0.25),
-    3px 12px 26px rgba(180, 0, 8, 0.32),
-    1px 3px 6px rgba(26, 26, 28, 0.16);
-  transition: transform 0.14s var(--ease-expressivo),
-    box-shadow 0.14s var(--ease-expressivo);
+  padding: clamp(12px, 2.4vh, 22px) clamp(20px, 6vw, 80px);
+  box-shadow: inset 1.5px 2px 0 rgba(255,255,255,0.3), 3px 10px 24px rgba(180, 0, 8, 0.3);
+  transition: transform 0.14s var(--ease-expressivo), box-shadow 0.14s var(--ease-expressivo);
   animation: convite 3.6s var(--ease-suave) infinite;
 }
+@keyframes convite { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
 
-@keyframes convite {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.022); }
+.botao-girar::after {
+  content: "";
+  position: absolute;
+  top: -60%; left: -85%;
+  width: 40%; height: 220%;
+  background: linear-gradient(105deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-22deg);
+  animation: varrer 5s var(--ease-suave) infinite;
 }
-
-.botao-girar:hover:not(:active) {
-  box-shadow:
-    inset 1.5px 2px 0 rgba(255, 255, 255, 0.3),
-    inset -1px -2px 0 rgba(120, 0, 4, 0.25),
-    4px 16px 34px rgba(180, 0, 8, 0.38),
-    1px 4px 8px rgba(26, 26, 28, 0.16);
-}
+@keyframes varrer { 0%, 66% { left: -85%; } 90%, 100% { left: 165%; } }
 
 .botao-girar:active {
   animation: none;
   transform: translateY(4px) scale(0.985);
-  box-shadow:
-    inset 1.5px 2px 0 rgba(255, 255, 255, 0.3),
-    inset -1px -2px 0 rgba(120, 0, 4, 0.25),
-    2px 4px 10px rgba(180, 0, 8, 0.3),
-    1px 1px 3px rgba(26, 26, 28, 0.14);
+  box-shadow: inset 1.5px 2px 0 rgba(255,255,255,0.3), 2px 3px 10px rgba(180, 0, 8, 0.3);
 }
+.botao-girar:disabled { opacity: 0.55; cursor: default; animation: none; }
 
-.botao-girar:disabled {
-  opacity: 0.55;
-  cursor: default;
-  animation: none;
-}
-
-/* varrimento de brilho, esparso e subtil */
-.botao-girar::after {
-  content: "";
-  position: absolute;
-  top: -60%;
-  left: -85%;
-  width: 40%;
-  height: 220%;
-  background: linear-gradient(
-    105deg,
-    transparent,
-    rgba(255, 255, 255, 0.28),
-    transparent
-  );
-  transform: skewX(-22deg);
-  animation: varrer 5s ease-in-out infinite;
-}
-
-@keyframes varrer {
-  0%, 66% { left: -85%; }
-  90%, 100% { left: 165%; }
-}
-
-/* postal de curiosidade - cartão editorial com friso vermelho */
-.postal {
-  position: relative;
-  background: var(--branco);
-  color: var(--preto);
-  max-width: min(92vw, 560px);
-  padding: 16px 22px 15px 26px;
-  border-radius: 14px;
-  border: 1px solid var(--linha);
-  border-left: 6px solid var(--vermelho-superficie);
-  box-shadow: 2px 12px 30px rgba(26, 26, 28, 0.12);
-  animation: postalEntra 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15);
-}
-
-.postal p {
-  font-size: clamp(0.95rem, 2.6vmin, 1.15rem);
-  line-height: 1.5;
-  font-weight: 500;
-}
-
-.postal-selo {
-  display: inline-block;
-  font-weight: 800;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+/* A REGRA DA CASA: 55 caracteres em ES contra 42 em PT. Quebra em duas
+   linhas em vez de transbordar - era este o overflow do telemóvel. */
+.regra {
+  font-size: clamp(0.58rem, 2.3vw, 0.76rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--vermelho-escuro);
-  margin-bottom: 6px;
+  color: var(--texto-suave);
+  text-align: center;
+  max-width: 100%;
+  line-height: 1.45;
 }
 
-@keyframes postalEntra {
-  from { opacity: 0; transform: translateY(16px); }
+.facto {
+  width: 100%;
+  max-width: min(100%, 460px);
+  padding: clamp(12px, 3vw, 18px) clamp(14px, 4vw, 22px);
+  background: var(--branco);
+  border-left: 5px solid var(--vermelho-superficie);
+  border-radius: 4px 14px 14px 4px;
+  box-shadow: 2px 10px 26px rgba(26, 26, 28, 0.12);
+  animation: factoEntra 0.4s var(--ease-expressivo);
+}
+.facto-rotulo {
+  display: block; margin-bottom: 6px;
+  font-size: 0.68rem; font-weight: 800;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--vermelho-escuro);
+}
+.facto p { font-size: clamp(0.85rem, 3.2vw, 1.02rem); line-height: 1.5; font-weight: 500; }
+@keyframes factoEntra {
+  from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ---------------------- faixa de selos ----------------------------- */
-
-/* prova de destino: linha própria da grelha (nunca tapada) */
-/* selos dentro do plinto: a branco sobre o vermelho da marca */
-.faixa-selos {
-  display: flex;
-  align-items: center;
-  gap: clamp(12px, 2.4vw, var(--e4));
-  flex-wrap: wrap;
-  padding: 0;
-  min-width: 0;
-}
-
-.selo { min-width: 0; }
-.selo-texto { min-width: 0; }
-
-.selo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/* filete separador entre selos (só entre, nunca nas pontas) */
-.selo + .selo {
-  border-left: 1px solid var(--linha);
-  padding-left: clamp(var(--e2), 3.5vw, var(--e5));
-  margin-left: calc(-1 * clamp(var(--e2), 3.5vw, var(--e5)) / 2);
-}
-
-.selo-sino {
-  height: 19px;
-  width: auto;
-  color: rgba(255, 255, 255, 0.9);
-  flex: none;
-}
-
-.selo-texto {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.25;
-}
-
-.selo-forte {
-  font-weight: 800;
-  font-size: clamp(0.76rem, 1.9vmin, 0.9rem);
-  color: #ffffff;
-  letter-spacing: 0.01em;
-}
-
-.selo-leve {
-  font-weight: 600;
-  font-size: clamp(0.64rem, 1.5vmin, 0.74rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-/* filete separador entre selos, sobre o vermelho */
-.selo + .selo {
-  border-left: 1px solid rgba(255, 255, 255, 0.22);
-  padding-left: clamp(var(--e2), 3vw, var(--e4));
-  margin-left: 0;
-}
-
-/* -------------------- base zigzag e contador ----------------------- */
-
-/* RODAPÉ: linha da grelha (não é `fixed`) - reserva o seu espaço,
-   por isso nunca corta os selos nem a mascote. O zigzag do escadório
-   vive no topo dele, com hairline branca a rimar com o cabeçalho. */
-/* BASE DO PALCO: um plinto vermelho onde a cena assenta. Leva os selos
-   institucionais lá dentro (a branco sobre vermelho) e o contador - por
-   isso deixa de ser "mais uma fita" e passa a ancorar a composição. */
+/* ── RODAPÉ: o plinto onde a cena assenta ── */
 .rodape {
-  position: relative;
-  z-index: 3;
   width: 100vw;
-  margin-top: var(--e2);
+  max-width: 100vw;
+  margin-top: clamp(12px, 3vh, 28px);
   flex: none;
-  box-shadow: 0 -14px 34px rgba(120, 40, 20, 0.14);
+  box-shadow: 0 -12px 30px rgba(120, 40, 20, 0.12);
 }
 
 .rodape-zig {
@@ -699,15 +384,15 @@ img {
   height: 11px;
   background: linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
   clip-path: polygon(
-    0 12px, 2.08% 0, 4.17% 12px, 6.25% 0, 8.33% 12px, 10.42% 0,
-    12.5% 12px, 14.58% 0, 16.67% 12px, 18.75% 0, 20.83% 12px, 22.92% 0,
-    25% 12px, 27.08% 0, 29.17% 12px, 31.25% 0, 33.33% 12px, 35.42% 0,
-    37.5% 12px, 39.58% 0, 41.67% 12px, 43.75% 0, 45.83% 12px, 47.92% 0,
-    50% 12px, 52.08% 0, 54.17% 12px, 56.25% 0, 58.33% 12px, 60.42% 0,
-    62.5% 12px, 64.58% 0, 66.67% 12px, 68.75% 0, 70.83% 12px, 72.92% 0,
-    75% 12px, 77.08% 0, 79.17% 12px, 81.25% 0, 83.33% 12px, 85.42% 0,
-    87.5% 12px, 89.58% 0, 91.67% 12px, 93.75% 0, 95.83% 12px, 97.92% 0,
-    100% 12px, 100% 100%, 0 100%
+    0 10px, 2.08% 0, 4.17% 10px, 6.25% 0, 8.33% 10px, 10.42% 0,
+    12.5% 10px, 14.58% 0, 16.67% 10px, 18.75% 0, 20.83% 10px, 22.92% 0,
+    25% 10px, 27.08% 0, 29.17% 10px, 31.25% 0, 33.33% 10px, 35.42% 0,
+    37.5% 10px, 39.58% 0, 41.67% 10px, 43.75% 0, 45.83% 10px, 47.92% 0,
+    50% 10px, 52.08% 0, 54.17% 10px, 56.25% 0, 58.33% 10px, 60.42% 0,
+    62.5% 10px, 64.58% 0, 66.67% 10px, 68.75% 0, 70.83% 10px, 72.92% 0,
+    75% 10px, 77.08% 0, 79.17% 10px, 81.25% 0, 83.33% 10px, 85.42% 0,
+    87.5% 10px, 89.58% 0, 91.67% 10px, 93.75% 0, 95.83% 10px, 97.92% 0,
+    100% 10px, 100% 100%, 0 100%
   );
 }
 
@@ -715,67 +400,85 @@ img {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--e2) var(--e3);
   flex-wrap: wrap;
-  padding: clamp(12px, 1.6vh, 18px) clamp(var(--e2), 3vw, var(--e5));
+  gap: clamp(8px, 2vw, 24px);
+  padding: clamp(10px, 1.6vh, 18px) clamp(12px, 3vw, 40px);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, transparent 34%),
+    linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 34%),
     linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
 }
 
-/* hairline branca no zigzag do rodapé: rima com o divisor do cabeçalho */
-.rodape-zig::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 5px;
-  height: 5px;
-  background: rgba(255, 255, 255, 0.42);
-  clip-path: polygon(
-    0 100%, 2.08% 0, 4.17% 100%, 6.25% 0, 8.33% 100%, 10.42% 0,
-    12.5% 100%, 14.58% 0, 16.67% 100%, 18.75% 0, 20.83% 100%, 22.92% 0,
-    25% 100%, 27.08% 0, 29.17% 100%, 31.25% 0, 33.33% 100%, 35.42% 0,
-    37.5% 100%, 39.58% 0, 41.67% 100%, 43.75% 0, 45.83% 100%, 47.92% 0,
-    50% 100%, 52.08% 0, 54.17% 100%, 56.25% 0, 58.33% 100%, 60.42% 0,
-    62.5% 100%, 64.58% 0, 66.67% 100%, 68.75% 0, 70.83% 100%, 72.92% 0,
-    75% 100%, 77.08% 0, 79.17% 100%, 81.25% 0, 83.33% 100%, 85.42% 0,
-    87.5% 100%, 89.58% 0, 91.67% 100%, 93.75% 0, 95.83% 100%, 97.92% 0,
-    100% 100%, 100% calc(100% - 1.2px), 0 calc(100% - 1.2px)
-  );
-  pointer-events: none;
+.faixa-selos {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: clamp(10px, 2.4vw, 28px);
+  min-width: 0;
+}
+.selo { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.selo + .selo {
+  border-left: 1px solid rgba(255, 255, 255, 0.22);
+  padding-left: clamp(10px, 2.4vw, 28px);
+}
+.selo-sino { height: clamp(13px, 3vw, 19px); width: auto; color: rgba(255,255,255,0.9); flex: none; }
+.selo-texto { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
+.selo-forte { font-weight: 800; font-size: clamp(0.68rem, 2.4vw, 0.88rem); color: #fff; }
+.selo-leve {
+  font-weight: 600; font-size: clamp(0.56rem, 2vw, 0.72rem);
+  letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.72);
 }
 
 .contador-premios {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
+  display: inline-flex; align-items: center; gap: 8px;
   font-weight: 700;
-  font-size: clamp(0.78rem, 1.8vmin, 0.94rem);
-  color: #ffffff;
+  font-size: clamp(0.68rem, 2.3vw, 0.92rem);
+  color: #fff;
   background: rgba(0, 0, 0, 0.16);
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 999px;
-  padding: 9px 18px;
+  padding: 8px 16px;
   white-space: nowrap;
 }
-
 .contador-premios::before {
-  content: "";
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
   background: #fff;
-  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
   animation: contadorPulsa 2.4s var(--ease-suave) infinite;
 }
-
 @keyframes contadorPulsa {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6); }
-  70%, 100% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
+  70%, 100% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
 }
 
-/* ------------------------ véu de sobreposição ---------------------- */
+/* ══════════════ DESKTOP / TABLET HORIZONTAL ══════════════ */
+
+@media (min-width: 900px) {
+  /* em desktop só cresce - a estrutura é a mesma, e é por isso que
+     a roda fica centrada em todos os ecrãs */
+  .linha-acao { max-width: 760px; gap: clamp(16px, 3vw, 40px); }
+  .bracvs img { height: clamp(170px, 30vh, 280px); }
+  .seletor-idioma { position: absolute; top: 0; right: 0; }
+  .botao-som { position: absolute; top: 0; left: 0; }
+}
+
+/* tablet horizontal baixo: a roda encolhe para tudo caber */
+@media (orientation: landscape) and (max-height: 700px) {
+  :root { --roda: min(52vw, 62vh, 460px); }
+  .bracvs img { height: clamp(110px, 26vh, 200px); }
+}
+
+/* ══════════════ MOVIMENTO REDUZIDO ══════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .bracvs-corpo, .bracvs-sombra, .roda-repouso, .roda-montra .roda-svg,
+  .botao-girar, .botao-girar::after, .fatia-heroi, .zigzag-anel.a-pulsar,
+  .contador-premios::before, .veu-raios, .montra-sino, .confetes i {
+    animation: none;
+  }
+  .facto { animation-duration: 0.01s; }
+}
+
+/* ══════════════ OVERLAYS (bilhete · montra · origem · admin) ══════════════ */
+.roda-montra .roda-svg {
+  animation: giraLenta 26s linear infinite;
+}
 
 .resultado-veu {
   position: fixed;
@@ -789,13 +492,11 @@ img {
   overflow: hidden;
 }
 
-/* derrota: discreto */
 .veu-neutro {
   background: rgba(20, 18, 16, 0.5);
   backdrop-filter: blur(4px);
 }
 
-/* VITÓRIA: vermelho festivo - o ecrã "explode" e vê-se do corredor */
 .veu-vitoria {
   background: radial-gradient(
     130% 130% at 50% 40%,
@@ -806,14 +507,6 @@ img {
   animation: vitoriaAcende 0.42s var(--ease-expressivo);
 }
 
-@keyframes vitoriaAcende {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* FUNDO DA VITÓRIA: fotografia de Braga em duotone vermelho.
-   Mesmo tratamento do modo montra - a marca continua a mandar, mas o
-   fundo passa a ter significado em vez de ser um enfeite abstrato. */
 .veu-fundo {
   position: absolute;
   inset: 0;
@@ -862,7 +555,6 @@ img {
   pointer-events: none;
 }
 
-/* confetes de vitória */
 .confetes {
   position: absolute;
   inset: 0;
@@ -880,13 +572,6 @@ img {
   animation-fill-mode: forwards;
 }
 
-@keyframes confeteCai {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  85% { opacity: 1; }
-  100% { transform: translateY(112vh) rotate(660deg); opacity: 0; }
-}
-
-/* Bracvs a festejar na vitória - ao lado do bilhete, a saltar */
 .vitoria-bracvs {
   position: relative;
   z-index: 2;
@@ -899,17 +584,6 @@ img {
   pointer-events: none;
 }
 
-@keyframes vitoriaSalta {
-  0%, 100% { transform: translateY(0) rotate(-2deg); }
-  50% { transform: translateY(-9%) rotate(2deg); }
-}
-
-/* em ecrãs sem largura para os dois, o bilhete manda */
-@media (max-width: 900px), (max-height: 620px) {
-  .vitoria-bracvs { display: none; }
-}
-
-/* ícone do prémio no bilhete (conjunto próprio, lib/icones.tsx) */
 .bilhete-icone {
   display: grid;
   place-items: center;
@@ -939,8 +613,6 @@ img {
   border-color: var(--linha);
 }
 
-/* --------------------------- bilhete ------------------------------- */
-
 .bilhete {
   position: relative;
   z-index: 2;
@@ -955,11 +627,6 @@ img {
 
 .bilhete-vitoria {
   box-shadow: 3px 24px 64px rgba(20, 18, 16, 0.35), 0 0 0 3px var(--vermelho-superficie);
-}
-
-@keyframes bilheteEntra {
-  from { opacity: 0; transform: scale(1.1) rotate(-1.2deg); }
-  to { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
 .bilhete-corpo {
@@ -1015,9 +682,6 @@ img {
   width: auto;
 }
 
-/* DERROTA = CONVITE: em vez de um beco sem saída, a foto do destino.
-   "Não ganhaste hoje - mas Braga fica à tua espera." É o melhor sítio
-   da app para uma imagem: a pessoa está parada, a olhar, sem prémio. */
 .bilhete-convite {
   position: relative;
   width: 100%;
@@ -1101,13 +765,13 @@ img {
   background: #241f1b;
 }
 
-/* os entalhes tomam a cor do véu em que o bilhete assenta */
 .veu-vitoria .bilhete::before,
 .veu-vitoria .bilhete::after {
   background: #d90008;
 }
 
 .bilhete::before { top: -11px; }
+
 .bilhete::after { bottom: -11px; }
 
 .canhoto-sino {
@@ -1124,12 +788,14 @@ img {
 }
 
 .canhoto-qr {
-  width: clamp(96px, 18vmin, 124px);
+  width: clamp(96px, 20vw, 128px);
   height: auto;
-  background: var(--branco);
-  padding: 5px;
+  background: #fff;
+  padding: 6px;
   border-radius: 10px;
   border: 1px solid var(--linha);
+  /* o QR é lido por câmaras de telemóvel: nada de suavização */
+  image-rendering: pixelated;
 }
 
 .canhoto-url {
@@ -1139,8 +805,6 @@ img {
   color: var(--texto-suave);
   word-break: break-all;
 }
-
-/* --------------------- pergunta de origem -------------------------- */
 
 .origem-cartao {
   background: var(--branco);
@@ -1203,8 +867,6 @@ img {
   padding: 10px 18px;
 }
 
-/* --------------- MODO MONTRA: "VERMELHO TOTAL" (direção A) ---------- */
-
 .montra-veu {
   position: fixed;
   inset: 0;
@@ -1221,7 +883,6 @@ img {
   );
 }
 
-/* slideshow do destino em duotone vermelho (lib/fotos.ts) */
 .montra-fotos {
   position: absolute;
   inset: 0;
@@ -1230,7 +891,6 @@ img {
   transition: opacity 0.8s var(--ease-suave);
 }
 
-/* só se revela quando pelo menos uma foto carregou mesmo */
 .montra-fotos.visivel {
   opacity: 1;
 }
@@ -1255,14 +915,6 @@ img {
   animation: kenBurns 16s var(--ease-suave) forwards;
 }
 
-@keyframes kenBurns {
-  from { transform: scale(1.02); }
-  to { transform: scale(1.12); }
-}
-
-/* camada que TINGE a fotografia de vermelho Visit Braga.
-   multiply sobre o cinza = duotone limpo; a vinheta radial escurece as
-   bordas e abre o centro, para o sino e o CTA lerem sempre. */
 .montra-duotone {
   position: absolute;
   inset: 0;
@@ -1275,7 +927,6 @@ img {
   mix-blend-mode: multiply;
 }
 
-/* segunda camada: devolve densidade e garante contraste do texto branco */
 .montra-duotone::after {
   content: "";
   position: absolute;
@@ -1312,11 +963,6 @@ img {
   animation: raiosRodam 60s linear infinite;
 }
 
-@keyframes raiosRodam {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
 .montra-conteudo {
   position: relative;
   text-align: center;
@@ -1333,14 +979,6 @@ img {
   filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.22));
 }
 
-@keyframes sinoBadala {
-  0%, 55%, 100% { transform: rotate(0deg); }
-  62% { transform: rotate(-9deg); }
-  72% { transform: rotate(7deg); }
-  82% { transform: rotate(-4deg); }
-  90% { transform: rotate(2deg); }
-}
-
 .montra-cta {
   font-family: var(--display);
   font-size: clamp(3rem, 11vw, 7rem);
@@ -1348,11 +986,6 @@ img {
   color: var(--branco);
   text-shadow: 0 6px 16px rgba(80, 0, 4, 0.5), 0 18px 44px rgba(60, 0, 3, 0.35);
   animation: ctaEntra 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-
-@keyframes ctaEntra {
-  from { opacity: 0; transform: scale(0.86); }
-  to { opacity: 1; transform: scale(1); }
 }
 
 .montra-toca {
@@ -1363,13 +996,6 @@ img {
   color: rgba(255, 255, 255, 0.92);
   animation: pulsar 2s ease-in-out infinite;
 }
-
-@keyframes pulsar {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* ------------------------- página /admin --------------------------- */
 
 .admin {
   min-height: 100dvh;
@@ -1415,12 +1041,6 @@ img {
   border-radius: 10px;
   background: var(--branco);
   width: 110px;
-}
-
-.admin input[type="password"] {
-  width: 200px;
-  display: block;
-  margin: 18px 0 10px;
 }
 
 .admin button {
@@ -1488,119 +1108,186 @@ img {
   box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
 }
 
-/* =====================================================================
-   OS TRÊS FORMATOS - regras explícitas, sem sobras
-   ---------------------------------------------------------------------
-   A grelha (cabeçalho/palco/selos/rodapé) garante que nada se sobrepõe.
-   Aqui só afinamos PROPORÇÕES por formato.
-   ===================================================================== */
-
-/* transição de presença da mascote (usada em retrato) */
-.bracvs-poiso {
-  transition: opacity 0.25s var(--ease-suave), transform 0.25s var(--ease-suave);
+@keyframes vitoriaAcende {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* --- 1. DESKTOP / MONITOR GRANDE DE STAND --- */
-@media (min-width: 1280px) and (min-height: 800px) {
-  .palco { --roda: min(calc(100dvh - 360px), 660px); }
+@keyframes confeteCai {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(112vh) rotate(660deg); opacity: 0; }
 }
 
-/* --- 2. TABLET HORIZONTAL (paisagem): roda + botão lado a lado --- */
-@media (orientation: landscape) and (max-height: 820px) {
-  .pagina { padding-top: var(--e1); }
-  .cabecalho-logo { height: clamp(30px, 5.6vmin, 46px); }
-  .cabecalho-tagline { font-size: clamp(0.6rem, 1.6vmin, 0.78rem); letter-spacing: 0.18em; }
-  .cabecalho-zig { margin-top: 6px; width: 104px; }
-
-  .palco {
-    --roda: min(46vw, calc(100dvh - 200px), 560px);
-    flex-direction: row;
-    gap: clamp(var(--e3), 4vw, var(--e5));
-  }
-  .zona-postal {
-    min-height: 0;
-    width: clamp(260px, 34vw, 440px);
-  }
-  .bracvs-poiso { left: -13%; bottom: 0; }
-
-  /* a faixa institucional encolhe para uma linha só */
-  .faixa-selos {
-    gap: var(--e3);
-    padding: var(--e1) var(--e2);
-  }
-  .selo-sino { height: 16px; }
-  .selo + .selo { padding-left: var(--e3); margin-left: calc(-1 * var(--e2)); }
+@keyframes bilheteEntra {
+  from { opacity: 0; transform: scale(1.1) rotate(-1.2deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-/* paisagem muito baixa (telemóvel deitado): a faixa não cabe */
-@media (orientation: landscape) and (max-height: 560px) {
-  .faixa-selos { display: none; }
-  .bracvs-poiso { display: none; }
-  .palco { --roda: min(44vw, calc(100dvh - 150px), 460px); }
+@keyframes kenBurns {
+  from { transform: scale(1.02); }
+  to { transform: scale(1.12); }
 }
 
-/* --- 3. TABLET / TELEMÓVEL VERTICAL (retrato) --- */
-@media (orientation: portrait) {
-  /* o seletor entra no fluxo: nunca tapa o logo */
-  .seletor-idioma {
-    position: static;
-    margin: var(--e1) auto 0;
-    width: max-content;
-    box-shadow: 1px 2px 8px rgba(26, 26, 28, 0.07);
-  }
-
-  .palco { --roda: min(92vw, calc(100dvh - 430px), 560px); }
-
-  /* mascote pequena, encostada ao pé da roda, SEMPRE inteira */
-  .bracvs-poiso { left: -6%; bottom: 0; }
-  .bracvs-img { height: min(calc(var(--roda) * 0.42), 240px); }
-
-  /* enquanto o postal está no ecrã, a mascote cede o lugar */
-  .bracvs-poiso.com-postal {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  /* selos: 2 linhas confortáveis, sem filetes (ficam melhor sem) */
-  .faixa-selos {
-    gap: var(--e1) var(--e3);
-    padding: var(--e2) var(--e1);
-  }
-  .selo + .selo { border-left: none; padding-left: 0; margin-left: 0; }
-  .selo-sino { height: 15px; }
-  .selo-forte { font-size: 0.76rem; }
-  .selo-leve { font-size: 0.64rem; }
+@keyframes raiosRodam {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* retrato estreito (telemóvel): só 2 selos cabem bem */
-@media (orientation: portrait) and (max-width: 480px) {
-  .selo:nth-child(3) { display: none; }
-  .bracvs-img { height: min(calc(var(--roda) * 0.38), 190px); }
+@keyframes sinoBadala {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  62% { transform: rotate(-9deg); }
+  72% { transform: rotate(7deg); }
+  82% { transform: rotate(-4deg); }
+  90% { transform: rotate(2deg); }
 }
 
-/* ---------------------- movimento reduzido ------------------------- */
+@keyframes ctaEntra {
+  from { opacity: 0; transform: scale(0.86); }
+  to { opacity: 1; transform: scale(1); }
+}
 
-@media (prefers-reduced-motion: reduce) {
-  .roda-montra .roda-svg,
-  .montra-raios,
-  .montra-sino,
-  .zigzag-anel.a-pulsar,
-  .bracvs-img,
-  .bracvs-sombra,
-  .botao-girar,
-  .botao-girar::after,
-  .roda-repouso,
-  .fatia-heroi,
-  .veu-raios,
-  .montra-foto.ativa,
-  .montra-toca,
-  .confetes i {
-    animation: none;
-  }
-  .postal,
-  .bilhete,
-  .origem-cartao,
-  .montra-cta {
-    animation-duration: 0.01s;
-  }
+@keyframes pulsar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── /admin: estado da ligação, KPIs e barras ── */
+
+
+/* ── /admin: estado da ligação, KPIs e barras de origem ──
+   Estas classes eram usadas pelo painel mas NUNCA tinham sido estilizadas
+   (o /admin aparecia sem formatação nenhuma). */
+
+.admin-estado {
+  margin-top: var(--e2);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.estado-ok { background: #eaf7ee; color: #1d6b34; border: 1px solid #bfe3c9; }
+.estado-offline,
+.estado-local { background: #fdeeee; color: var(--vermelho-escuro); border: 1px solid #f3c9c9; }
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 10px;
+  margin-top: var(--e2);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px 16px;
+  background: var(--branco);
+  border: 1px solid #e8e1d4;
+  border-radius: 14px;
+}
+
+.kpi-num {
+  font-family: var(--display);
+  font-size: 1.7rem;
+  line-height: 1.05;
+  color: var(--vermelho-superficie);
+}
+
+.kpi-rot {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--texto-suave);
+}
+
+.barra {
+  width: 100%;
+  height: 9px;
+  background: #efe8db;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.barra-cheia {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff1207, var(--vermelho-escuro));
+  transition: width 0.5s var(--ease-suave);
+}
+
+
+/* ══════════════ ENCENAÇÃO E CONTROLOS ══════════════ */
+
+/* HALO: a fatia vencedora pulsa durante o suspense */
+.fatia-vencedora {
+  animation: haloPulsa 0.6s var(--ease-suave) infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
+  pointer-events: none;
+}
+
+@keyframes haloPulsa {
+  0%, 100% { opacity: 0.35; stroke-width: 2; }
+  50% { opacity: 1; stroke-width: 5; }
+}
+
+/* zoom de câmara: a envolvente é transformada pelo JS durante o giro */
+.roda-envolvente {
+  transform-origin: center center;
+  transition: transform 0.5s var(--ease-expressivo);
+  will-change: transform;
+}
+
+/* botão de silêncio (persistente entre recargas) */
+.botao-som {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  color: var(--texto-suave);
+  box-shadow: 1px 3px 10px rgba(26, 26, 28, 0.08);
+}
+
+.botao-som:active { transform: scale(0.92); }
+
+/* "ENTREGUE": premir 2 s, com anel de progresso.
+   Um onClick simples deixava qualquer visitante queimar o prémio. */
+.botao-entregue {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.entregue-anel {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(255, 255, 255, 0.28);
+  width: var(--progresso, 0%);
+  transition: width 0.05s linear;
+}
+
+.botao-entregue.a-confirmar {
+  transform: scale(0.98);
+}
+
+.entregue-texto { position: relative; z-index: 1; }
+
+/* canvas dos confetes: por cima de tudo, sem apanhar toques */
+.confetes-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 200;
+  pointer-events: none;
 }
