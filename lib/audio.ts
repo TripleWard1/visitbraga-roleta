@@ -45,13 +45,9 @@ export function alternarSom(): boolean {
   return silencio;
 }
 
-export function ouvirSom(cb: (s: boolean) => void): () => void {
+export function ouvirSom(cb: (s: boolean) => void) {
   ouvintes.add(cb);
-  // as chavetas são essenciais: `ouvintes.delete()` devolve um boolean, e a
-  // função de limpeza do useEffect tem de devolver void
-  return () => {
-    ouvintes.delete(cb);
-  };
+  return () => ouvintes.delete(cb);
 }
 
 function contexto(): AudioContext | null {

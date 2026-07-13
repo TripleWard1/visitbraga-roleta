@@ -112,10 +112,12 @@ export default function Pagina() {
             />
           </div>
 
-          <div className="linha-acao">
-            <Bracvs fase={fase} />
+          {/* a mascote é irmã da roda (não vive por baixo dela): em desktop
+              fica AO LADO, o que poupa ~300 px de altura e faz tudo caber
+              sem scroll. Em mobile desce para junto do botão. */}
+          <Bracvs fase={fase} />
 
-            <div className="acao-coluna">
+          <div className="acao-coluna">
             {fase === "giro" ? (
               <div className="facto" key={facto}>
                 <span className="facto-rotulo">{t("sabiasQue", idioma)}</span>
@@ -135,7 +137,6 @@ export default function Pagina() {
                 ) : null}
               </>
             )}
-            </div>
           </div>
         </section>
 

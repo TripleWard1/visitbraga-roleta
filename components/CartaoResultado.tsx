@@ -57,35 +57,42 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
   const [fundoFalhou, setFundoFalhou] = useState(false);
   const [bracvsFalhou, setBracvsFalhou] = useState(false);
 
-  /* ── premir 2 s para confirmar a entrega ── */
-  const [progresso, setProgresso] = useState(0);
+  /* ── PREMIR 2 s PARA CONFIRMAR ──
+     O lag vinha daqui: eu estava a fazer setState 60 vezes por segundo, o
+     que obrigava o React a re-renderizar o cartão inteiro (ícone, textos,
+     QR) a cada frame. Agora o progresso é escrito DIRETO no DOM, fora do
+     ciclo do React - só há um re-render, no fim. */
   const [aConfirmar, setAConfirmar] = useState(false);
+  const anelRef = useRef<HTMLSpanElement | null>(null);
   const rafRef = useRef(0);
-  const inicioRef = useRef(0);
   const feitoRef = useRef(false);
 
   const DURACAO = 2000;
+
+  const pintar = (pct: number) => {
+    if (anelRef.current) anelRef.current.style.width = pct + "%";
+  };
 
   const pararConfirmacao = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     if (feitoRef.current) return;
     setAConfirmar(false);
-    setProgresso(0);
+    pintar(0);
   }, []);
 
   const comecarConfirmacao = useCallback(() => {
     if (feitoRef.current) return;
     setAConfirmar(true);
-    inicioRef.current = performance.now();
     vibrar(12);
+    const t0 = performance.now();
     const passo = (agora: number) => {
-      const p = Math.min(100, ((agora - inicioRef.current) / DURACAO) * 100);
-      setProgresso(p);
+      const p = Math.min(100, ((agora - t0) / DURACAO) * 100);
+      pintar(p);                       // DOM direto: zero re-renders
       if (p >= 100) {
         feitoRef.current = true;
         vibrar([24, 30, 24]);
         registarEntrega();
-        setTimeout(aoFechar, 260);
+        setTimeout(aoFechar, 240);
         return;
       }
       rafRef.current = requestAnimationFrame(passo);
@@ -210,9 +217,12 @@ export default function CartaoResultado({ premio, idioma, aoFechar }: Props) {
                   onPointerUp={pararConfirmacao}
                   onPointerLeave={pararConfirmacao}
                   onPointerCancel={pararConfirmacao}
-                  style={{ ["--progresso" as string]: progresso + "%" }}
                 >
-                  <span className="entregue-anel" aria-hidden="true" />
+                  <span
+                    ref={anelRef}
+                    className="entregue-anel"
+                    aria-hidden="true"
+                  />
                   <span className="entregue-texto">
                     {aConfirmar
                       ? t("entregueManter", idioma)

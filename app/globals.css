@@ -33,8 +33,11 @@
   --ease-expressivo: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-suave: cubic-bezier(0.45, 0, 0.25, 1);
   --e1: 8px; --e2: 16px; --e3: 24px; --e4: 32px; --e5: 40px;
-  /* A RODA: fluida, limitada pelo mais apertado dos três */
-  --roda: min(92vw, 68vh, 580px);
+  /* A RODA - a regra de ouro do layout.
+     Em ecrãs largos NÃO se mede contra o ecrã (era o bug: a roda empurrava
+     o rodapé para fora e obrigava a fazer scroll). Mede-se contra o que
+     SOBRA depois do cabeçalho, da linha de ação e do plinto. */
+  --roda: min(92vw, calc(100dvh - 360px), 600px);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -42,8 +45,8 @@
 html, body {
   min-height: 100%;
   overflow-x: hidden;   /* nada transborda, em nenhum idioma */
+  overflow-y: auto;     /* o rato TEM de poder rolar (não rolava) */
   max-width: 100%;
-  overscroll-behavior-y: none;
   touch-action: manipulation;
 }
 
@@ -61,25 +64,37 @@ button { font-family: inherit; border: none; background: none; color: inherit; c
 button:focus-visible { outline: 3px solid var(--vermelho); outline-offset: 3px; }
 img { display: block; max-width: 100%; }
 
-/* ══════════════ FUNDO - a fórmula do cartaz ══════════════ */
+/* ══════════════ FUNDO ══════════════ */
 
-.fundo { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.fundo-svg { width: 100%; height: 100%; display: block; }
-
-/* grão de impressão (3%) por cima das silhuetas */
-.fundo-grao {
-  position: absolute; inset: 0; opacity: 0.6;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.055'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+.fundo {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-/* cone de luz sobre a roda + vinheta: limpa o centro do cartaz */
-/* a luz do palco lava o centro e as silhuetas respiram nas margens */
-.fundo-creme::after {
-  content: "";
-  position: absolute; inset: 0;
+/* campo quente + chão com horizonte + luz de palco sobre a roda */
+.fundo-creme {
   background:
-    radial-gradient(46% 42% at 50% 42%, rgba(255,255,255,0.95) 0%, rgba(255,253,247,0.6) 42%, rgba(255,250,240,0) 74%),
-    radial-gradient(130% 110% at 50% 45%, transparent 52%, rgba(86, 58, 46, 0.09) 100%);
+    /* luz de palco (o centro, onde a roda está) */
+    radial-gradient(44% 40% at 50% 40%, rgba(255,255,255,0.95) 0%, rgba(255,253,247,0.5) 46%, rgba(255,250,240,0) 74%),
+    /* chão: um plano mais quente à frente, com o horizonte a 66% */
+    linear-gradient(180deg, transparent 0%, transparent 64%, rgba(120, 96, 66, 0.1) 66%, rgba(226, 214, 193, 0.5) 67%, rgba(214, 199, 173, 0.55) 100%),
+    /* parede */
+    radial-gradient(120% 90% at 38% 12%, #fffefb 0%, #f7f2e9 48%, #ece5d8 100%);
+}
+
+.fundo-vermelho {
+  background: radial-gradient(130% 120% at 50% 40%, #ff2415 0%, #e00009 55%, #a80006 100%);
+}
+
+/* grão de impressão */
+.fundo-grao {
+  position: absolute;
+  inset: 0;
+  opacity: 0.6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 /* ══════════════ ESTRUTURA (fluxo, não absoluto) ══════════════ */
@@ -135,40 +150,40 @@ img { display: block; max-width: 100%; }
 }
 .seletor-idioma-botao.ativo { background: var(--vermelho-superficie); color: var(--branco); }
 
-/* ── PALCO: coluna simples.
-   A roda fica SEMPRE centrada (é filha de um flex column centrado).
-   Por baixo, uma linha: [Bracvs] [botão GIRAR].
-   A mesma disposição em mobile e desktop - a grelha de 3 colunas do
-   desktop estava a empurrar a roda para a esquerda. Simplicidade ganha. */
+/* ── PALCO ──────────────────────────────────────────────────────────
+   DESKTOP: [mascote] [roda] [espaço] · botão por baixo
+            → a mascote ao lado (não por baixo) poupa ~300px de altura,
+              e é por isso que tudo cabe sem scroll.
+   MOBILE:  roda em cima · [mascote] [botão] por baixo.
+
+   NOTA: a coluna da roda é `auto`. Ter-lhe posto `width: 100%` era o bug
+   que a descentrava - referência circular no dimensionamento da grelha. */
 .palco {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(8px, 2vh, 20px);
+  display: grid;
   width: 100%;
+  align-items: end;
+  justify-items: center;
+  gap: clamp(8px, 2vh, 20px) clamp(8px, 2vw, 20px);
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "roda roda"
+    "bracvs acao";
   flex: 1;
-  justify-content: center;
+  align-content: center;
 }
 
-.celula-roda { display: flex; justify-content: center; width: 100%; }
+.celula-roda { grid-area: roda; }
 
-/* a linha da ação: mascote encostada ao botão, a olhar para a roda */
-.linha-acao {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: clamp(6px, 2vw, 24px);
-  width: 100%;
-  max-width: min(100%, 640px);
-}
+.bracvs { grid-area: bracvs; align-self: end; }
 
 .acao-coluna {
+  grid-area: acao;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: clamp(6px, 1.2vh, 10px);
-  flex: 1;
   min-width: 0;   /* deixa encolher: sem isto o ES transbordava */
+  width: 100%;
 }
 
 /* ── a roda ── */
@@ -450,10 +465,17 @@ img { display: block; max-width: 100%; }
 /* ══════════════ DESKTOP / TABLET HORIZONTAL ══════════════ */
 
 @media (min-width: 900px) {
-  /* em desktop só cresce - a estrutura é a mesma, e é por isso que
-     a roda fica centrada em todos os ecrãs */
-  .linha-acao { max-width: 760px; gap: clamp(16px, 3vw, 40px); }
-  .bracvs img { height: clamp(170px, 30vh, 280px); }
+  /* DESKTOP: a mascote passa para o LADO da roda. Tudo cabe no ecrã -
+     zero scroll (verificado em 1280×800, 1366×768, 1440×900, 1920×1080). */
+  .palco {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      "bracvs roda espaco"
+      "acao acao acao";
+  }
+  .bracvs { justify-self: end; }
+  .acao-coluna { max-width: 460px; }
+  .bracvs img { height: clamp(220px, 40vh, 360px); }
   .seletor-idioma { position: absolute; top: 0; right: 0; }
   .botao-som { position: absolute; top: 0; left: 0; }
 }
@@ -1269,11 +1291,14 @@ img { display: block; max-width: 100%; }
 
 .entregue-anel {
   position: absolute;
-  inset: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
   z-index: -1;
-  background: rgba(255, 255, 255, 0.28);
-  width: var(--progresso, 0%);
-  transition: width 0.05s linear;
+  width: 0;
+  background: rgba(255, 255, 255, 0.3);
+  /* a largura é escrita direto no DOM pelo rAF: sem transição, sem lag */
+  will-change: width;
 }
 
 .botao-entregue.a-confirmar {
@@ -1290,4 +1315,39 @@ img { display: block; max-width: 100%; }
   height: 100vh;
   z-index: 200;
   pointer-events: none;
+}
+
+
+/* ══════════════ BILHETE EM ECRÃS ESTREITOS ══════════════
+   O bilhete é uma LINHA (prémio | QR). Em mobile a linha não cabia e saía
+   cortada pela direita - metade do QR ficava fora do ecrã. Aqui empilha. */
+
+@media (max-width: 720px) {
+  .bilhete {
+    width: min(94vw, 460px);
+    max-height: 88dvh;
+    overflow-y: auto;
+  }
+
+  .bilhete-corpo { flex-direction: column; }
+
+  .bilhete-canhoto {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    border-left: none;
+    border-top: 2px dashed rgba(26, 26, 28, 0.22);
+    padding: 16px;
+  }
+
+  /* os entalhes do picotado passam para os lados */
+  .bilhete::before,
+  .bilhete::after { display: none; }
+
+  .canhoto-qr { width: 88px; }
+  .canhoto-titulo { text-align: left; }
+  .bilhete-premio { font-size: clamp(1.7rem, 8vw, 2.4rem); }
+  .vitoria-bracvs { display: none; }  /* não há largura para os dois */
 }
