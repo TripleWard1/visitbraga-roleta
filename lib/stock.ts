@@ -69,7 +69,9 @@ export function subscreverStock(cb: (s: Stock) => void): () => void {
   if (!firebaseAtivo || !db) {
     ouvintesStock.add(cb);
     cb({ ...stockLocal });
-    return () => ouvintesStock.delete(cb);
+    return () => {
+      ouvintesStock.delete(cb);
+    };
   }
 
   const ref = doc(db, "roletas", DOC_STOCK);
@@ -145,7 +147,9 @@ export function subscreverStats(cb: (s: Stats) => void): () => void {
   if (!firebaseAtivo || !db) {
     ouvintesStats.add(cb);
     cb({ ...statsLocal, origens: { ...statsLocal.origens } });
-    return () => ouvintesStats.delete(cb);
+    return () => {
+      ouvintesStats.delete(cb);
+    };
   }
 
   const ref = doc(db, "roletas", DOC_STATS);
