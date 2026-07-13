@@ -37,7 +37,9 @@
      Em ecrãs largos NÃO se mede contra o ecrã (era o bug: a roda empurrava
      o rodapé para fora e obrigava a fazer scroll). Mede-se contra o que
      SOBRA depois do cabeçalho, da linha de ação e do plinto. */
-  --roda: min(92vw, calc(100dvh - 360px), 600px);
+  /* A RODA - cabe sempre, sem scroll. Sem rodapé, ganhou 60px:
+     desconta só o cabeçalho (~90px) e a zona de ação (~110px). */
+  --roda: min(92vw, calc(100dvh - 215px), 620px);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -97,42 +99,120 @@ img { display: block; max-width: 100%; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.05'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
-/* ══════════════ ESTRUTURA (fluxo, não absoluto) ══════════════ */
+/* ══════════════ ESTRUTURA - sem scroll, sem rodapé ══════════════
+   A roda está SOZINHA no fluxo (por isso fica sempre centrada) e a mascote
+   está ancorada A ELA. Tudo cabe em 100dvh, em mobile e em desktop. */
 
 .pagina {
   position: relative;
-  min-height: 100dvh;
+  height: 100dvh;              /* sem scroll: nunca cresce */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(10px, 2vh, 20px);
-  padding: clamp(10px, 2.5vw, 20px) clamp(12px, 3vw, 24px) 0;
+  justify-content: space-between;
+  padding: clamp(8px, 2vh, 18px) clamp(12px, 3vw, 24px) clamp(6px, 1.4vh, 14px);
   max-width: 100%;
+  overflow: hidden;
 }
 
+/* ── AURA: o halo teatral por trás da roda ── */
+.aura {
+  position: fixed;
+  left: 50%;
+  top: 46%;
+  width: min(150vw, 150vh);
+  height: min(150vw, 150vh);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle,
+    rgba(224, 0, 9, 0.1) 0%,
+    rgba(224, 0, 9, 0.04) 32%,
+    transparent 58%);
+  animation: auraRespira 6s var(--ease-suave) infinite;
+  transition: opacity 0.5s var(--ease-suave), filter 0.5s var(--ease-suave);
+}
+
+@keyframes auraRespira {
+  0%, 100% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* durante o giro a luz INTENSIFICA-SE e o resto do mundo escurece */
+.aura.fase-giro,
+.aura.fase-suspense {
+  animation: auraPulsa 1.1s var(--ease-suave) infinite;
+  filter: saturate(1.4);
+}
+
+@keyframes auraPulsa {
+  0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.16); }
+}
+
+/* vinheta dinâmica: o mundo à volta apaga-se quando a roda anda */
+.pagina::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 100% at 50% 44%, transparent 40%, rgba(60, 40, 22, 0.28) 100%);
+  opacity: 0;
+  transition: opacity 0.8s var(--ease-suave);
+}
+
+.pagina.fase-giro::after,
+.pagina.fase-suspense::after { opacity: 1; }
+
+/* ── ORNAMENTOS: zigzags do escadório nos cantos (substituem o rodapé) ── */
+.ornamento {
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  width: clamp(120px, 22vw, 300px);
+  height: clamp(120px, 22vw, 300px);
+  opacity: 0.5;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(224, 0, 9, 0.11) 0 3px,
+      transparent 3px 16px);
+  -webkit-mask-image: radial-gradient(circle at var(--ancora), #000 0%, transparent 72%);
+  mask-image: radial-gradient(circle at var(--ancora), #000 0%, transparent 72%);
+}
+
+.canto-ne { top: 0; right: 0; --ancora: 100% 0%; }
+.canto-so { bottom: 0; left: 0; --ancora: 0% 100%; }
+
+/* ── cabeçalho ── */
 .cabecalho {
   position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(6px, 1.4vh, 12px);
+  gap: clamp(4px, 1vh, 10px);
   width: 100%;
+  flex: none;
   text-align: center;
 }
 
-.logo { height: clamp(28px, 7vw, 52px); width: auto; }
+.logo { height: clamp(24px, 5.4vh, 46px); width: auto; }
 
 .tagline {
   font-weight: 600;
-  font-size: clamp(0.6rem, 2.4vw, 0.86rem);
-  letter-spacing: clamp(0.08em, 0.5vw, 0.2em);
+  font-size: clamp(0.56rem, 1.6vh, 0.8rem);
+  letter-spacing: clamp(0.08em, 0.4vw, 0.18em);
   text-transform: uppercase;
   color: var(--texto-suave);
   max-width: 100%;
 }
 
 .seletor-idioma {
-  display: flex; gap: 3px; padding: 4px;
+  display: flex;
+  gap: 3px;
+  padding: 3px;
   border-radius: 999px;
   background: var(--branco);
   border: 1px solid var(--linha);
@@ -140,51 +220,68 @@ img { display: block; max-width: 100%; }
 }
 
 .seletor-idioma-botao {
-  padding: clamp(7px, 1.6vw, 10px) clamp(12px, 3vw, 17px);
+  padding: clamp(6px, 1.2vh, 9px) clamp(11px, 3vw, 16px);
   border-radius: 999px;
   font-weight: 700;
-  font-size: clamp(0.78rem, 2.6vw, 0.95rem);
+  font-size: clamp(0.74rem, 1.6vh, 0.92rem);
   letter-spacing: 0.05em;
   color: var(--preto);
   transition: background 0.18s var(--ease-suave), color 0.18s var(--ease-suave);
 }
+
 .seletor-idioma-botao.ativo { background: var(--vermelho-superficie); color: var(--branco); }
 
-/* ── PALCO ──────────────────────────────────────────────────────────
-   DESKTOP: [mascote] [roda] [espaço] · botão por baixo
-            → a mascote ao lado (não por baixo) poupa ~300px de altura,
-              e é por isso que tudo cabe sem scroll.
-   MOBILE:  roda em cima · [mascote] [botão] por baixo.
-
-   NOTA: a coluna da roda é `auto`. Ter-lhe posto `width: 100%` era o bug
-   que a descentrava - referência circular no dimensionamento da grelha. */
-.palco {
+.botao-som {
+  position: absolute;
+  top: 0;
+  left: 0;
   display: grid;
-  width: 100%;
-  align-items: end;
-  justify-items: center;
-  gap: clamp(8px, 2vh, 20px) clamp(8px, 2vw, 20px);
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-areas:
-    "roda roda"
-    "bracvs acao";
-  flex: 1;
-  align-content: center;
+  place-items: center;
+  width: clamp(30px, 5vh, 38px);
+  height: clamp(30px, 5vh, 38px);
+  border-radius: 999px;
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  color: var(--texto-suave);
+  box-shadow: 1px 3px 10px rgba(26, 26, 28, 0.08);
 }
 
-.celula-roda { grid-area: roda; }
+.botao-som:active { transform: scale(0.92); }
 
-.bracvs { grid-area: bracvs; align-self: end; }
-
-.acao-coluna {
-  grid-area: acao;
+/* ── PALCO ── */
+.palco {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(6px, 1.2vh, 10px);
-  min-width: 0;   /* deixa encolher: sem isto o ES transbordava */
+  justify-content: center;
+  gap: clamp(6px, 1.6vh, 18px);
+  flex: 1;
+  min-height: 0;
   width: 100%;
 }
+
+/* A RODA SOZINHA NO FLUXO: é impossível descentrá-la.
+   A mascote está ancorada a este palco, não à grelha da página. */
+.roda-palco {
+  position: relative;
+  width: var(--roda);
+  max-width: 100%;
+  flex: none;
+}
+
+/* ── AÇÃO ── */
+.acao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(4px, 0.8vh, 8px);
+  width: 100%;
+  max-width: min(100%, 460px);
+  flex: none;
+}
+
 
 /* ── a roda ── */
 .roda-envolvente { position: relative; width: var(--roda); max-width: 100%; }
@@ -244,21 +341,27 @@ img { display: block; max-width: 100%; }
 .fatia-heroi { animation: heroiBrilha 2.8s var(--ease-suave) infinite; }
 @keyframes heroiBrilha { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
 
-/* ── BRACVS: célula própria, nunca escondido ── */
+/* ── BRACVS: ancorado À RODA, nunca à grelha da página.
+   É por isso que a roda não pode descentrar: ela está sozinha no fluxo, e
+   a mascote paira ao lado dela sem consumir espaço. Nunca a sobrepõe (fica
+   fora da caixa da roda) e NUNCA é escondida - em ecrãs pequenos, encolhe. */
 .bracvs {
-  position: relative;
-  flex: none;
+  position: absolute;
+  right: 100%;
+  bottom: 4%;
+  margin-right: clamp(-14px, -1vw, 8px);
   display: flex;
   flex-direction: column;
   align-items: center;
   pointer-events: none;
+  z-index: 2;
 }
 
 .bracvs-corpo { transform-origin: 50% 100%; animation: respira 3.6s var(--ease-suave) infinite; }
 
 .bracvs img {
-  /* nunca acima do nativo (272px): sem desfoque. Encolhe, não desaparece. */
-  height: clamp(84px, 22vh, 260px);
+  /* nunca acima do nativo (272px). Encolhe, não desaparece. */
+  height: clamp(90px, 26vh, 300px);
   width: auto;
   max-width: 272px;
   transform: scaleX(-1);   /* olha para a roda */
@@ -266,7 +369,8 @@ img { display: block; max-width: 100%; }
 
 .bracvs-sombra {
   display: block;
-  width: 64%; height: 10px;
+  width: 64%;
+  height: 10px;
   margin-top: -4px;
   border-radius: 50%;
   background: radial-gradient(ellipse at 46% 45%,
@@ -385,99 +489,13 @@ img { display: block; max-width: 100%; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── RODAPÉ: o plinto onde a cena assenta ── */
-.rodape {
-  width: 100vw;
-  max-width: 100vw;
-  margin-top: clamp(12px, 3vh, 28px);
-  flex: none;
-  box-shadow: 0 -12px 30px rgba(120, 40, 20, 0.12);
-}
-
-.rodape-zig {
-  position: relative;
-  height: 11px;
-  background: linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
-  clip-path: polygon(
-    0 10px, 2.08% 0, 4.17% 10px, 6.25% 0, 8.33% 10px, 10.42% 0,
-    12.5% 10px, 14.58% 0, 16.67% 10px, 18.75% 0, 20.83% 10px, 22.92% 0,
-    25% 10px, 27.08% 0, 29.17% 10px, 31.25% 0, 33.33% 10px, 35.42% 0,
-    37.5% 10px, 39.58% 0, 41.67% 10px, 43.75% 0, 45.83% 10px, 47.92% 0,
-    50% 10px, 52.08% 0, 54.17% 10px, 56.25% 0, 58.33% 10px, 60.42% 0,
-    62.5% 10px, 64.58% 0, 66.67% 10px, 68.75% 0, 70.83% 10px, 72.92% 0,
-    75% 10px, 77.08% 0, 79.17% 10px, 81.25% 0, 83.33% 10px, 85.42% 0,
-    87.5% 10px, 89.58% 0, 91.67% 10px, 93.75% 0, 95.83% 10px, 97.92% 0,
-    100% 10px, 100% 100%, 0 100%
-  );
-}
-
-.rodape-conteudo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: clamp(8px, 2vw, 24px);
-  padding: clamp(10px, 1.6vh, 18px) clamp(12px, 3vw, 40px);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.16) 0%, transparent 34%),
-    linear-gradient(180deg, var(--vermelho-superficie), var(--vermelho-escuro));
-}
-
-.faixa-selos {
-  display: flex; align-items: center; flex-wrap: wrap;
-  gap: clamp(10px, 2.4vw, 28px);
-  min-width: 0;
-}
-.selo { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.selo + .selo {
-  border-left: 1px solid rgba(255, 255, 255, 0.22);
-  padding-left: clamp(10px, 2.4vw, 28px);
-}
-.selo-sino { height: clamp(13px, 3vw, 19px); width: auto; color: rgba(255,255,255,0.9); flex: none; }
-.selo-texto { display: flex; flex-direction: column; line-height: 1.3; min-width: 0; }
-.selo-forte { font-weight: 800; font-size: clamp(0.68rem, 2.4vw, 0.88rem); color: #fff; }
-.selo-leve {
-  font-weight: 600; font-size: clamp(0.56rem, 2vw, 0.72rem);
-  letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.72);
-}
-
-.contador-premios {
-  display: inline-flex; align-items: center; gap: 8px;
-  font-weight: 700;
-  font-size: clamp(0.68rem, 2.3vw, 0.92rem);
-  color: #fff;
-  background: rgba(0, 0, 0, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 999px;
-  padding: 8px 16px;
-  white-space: nowrap;
-}
-.contador-premios::before {
-  content: ""; width: 7px; height: 7px; border-radius: 50%;
-  background: #fff;
-  animation: contadorPulsa 2.4s var(--ease-suave) infinite;
-}
-@keyframes contadorPulsa {
-  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.6); }
-  70%, 100% { box-shadow: 0 0 0 8px rgba(255,255,255,0); }
-}
-
 /* ══════════════ DESKTOP / TABLET HORIZONTAL ══════════════ */
 
 @media (min-width: 900px) {
-  /* DESKTOP: a mascote passa para o LADO da roda. Tudo cabe no ecrã -
-     zero scroll (verificado em 1280×800, 1366×768, 1440×900, 1920×1080). */
-  .palco {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    grid-template-areas:
-      "bracvs roda espaco"
-      "acao acao acao";
-  }
-  .bracvs { justify-self: end; }
-  .acao-coluna { max-width: 460px; }
-  .bracvs img { height: clamp(220px, 40vh, 360px); }
-  .seletor-idioma { position: absolute; top: 0; right: 0; }
-  .botao-som { position: absolute; top: 0; left: 0; }
+  :root { --roda: min(62vw, calc(100dvh - 240px), 680px); }
+  .bracvs { bottom: 2%; }
+  .bracvs img { height: clamp(200px, 38vh, 340px); }
+  .acao { max-width: 480px; }
 }
 
 /* tablet horizontal baixo: a roda encolhe para tudo caber */
@@ -1350,4 +1368,60 @@ img { display: block; max-width: 100%; }
   .canhoto-titulo { text-align: left; }
   .bilhete-premio { font-size: clamp(1.7rem, 8vw, 2.4rem); }
   .vitoria-bracvs { display: none; }  /* não há largura para os dois */
+}
+
+
+/* ── rótulos da roda: camada que ORBITA mas nunca roda ── */
+.rotulos { pointer-events: none; }
+
+
+/* ── brilho especular: um reflexo varre o "vidro" da roda de vez em quando ── */
+.roda-envolvente::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 46%,
+    rgba(255, 255, 255, 0.18) 52%,
+    transparent 60%
+  );
+  -webkit-mask-image: radial-gradient(circle, #000 66%, transparent 68%);
+  mask-image: radial-gradient(circle, #000 66%, transparent 68%);
+  opacity: 0;
+  animation: brilhoVarre 7s var(--ease-suave) infinite;
+}
+
+@keyframes brilhoVarre {
+  0%, 74% { opacity: 0; transform: translateX(-40%); }
+  82% { opacity: 1; }
+  92%, 100% { opacity: 0; transform: translateX(40%); }
+}
+
+/* ── selo ESGOTADO: a fatia não muda só de cor, é CARIMBADA ── */
+.selo-esgotado {
+  font-family: var(--corpo);
+  font-weight: 800;
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  fill: #7a6a58;
+  animation: carimbar 0.45s var(--ease-expressivo);
+}
+
+.selo-esgotado-caixa {
+  fill: none;
+  stroke: #7a6a58;
+  stroke-width: 1.2;
+  animation: carimbar 0.45s var(--ease-expressivo);
+}
+
+@keyframes carimbar {
+  0% { opacity: 0; transform: scale(2.2); }
+  60% { opacity: 1; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
 }

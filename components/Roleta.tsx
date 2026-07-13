@@ -43,22 +43,27 @@ const C = 220; // centro do viewBox
 const R = 154; // raio das fatias
 
 /**
- * TIPOGRAFIA DA RODA - nenhuma legenda pode aparecer invertida
- * -------------------------------------------------------------
- * O texto é TANGENCIAL (perpendicular ao raio) e as fatias da metade
- * inferior levam +180°, o que as põe a direito. Resultado: as oito legendas
- * leem-se todas, em qualquer posição da roda - era este o tell nº1 de
- * roleta amadora (no telemóvel via-se "PEGATINA BRACVS" ao contrário).
+ * RÓTULOS SEMPRE A DIREITO - a correção de raiz
+ * -----------------------------------------------
+ * O bug: o texto rodava COM o disco. Eu calculava a orientação a partir da
+ * posição INICIAL da fatia, mas quando a roda pára num ângulo qualquer, as
+ * fatias mudaram de sítio - o que estava em cima foi para baixo, e o rótulo
+ * aparece invertido. Nenhuma rotação fixa (nem radial, nem tangencial com
+ * +180°) resolve isto: o problema é a roda rodar.
  *
- * O corpo da letra é calculado contra a CORDA disponível na fatia, e é o
- * ESPANHOL que manda: é ~20% mais longo que o português. Dimensionar pelo
- * PT era exactamente o que rebentava o layout em ES.
+ * Solução: os rótulos DEIXAM DE RODAR. Vivem fora do disco e apenas
+ * ORBITAM com ele - a cada frame, cada rótulo é reposicionado no ponto da
+ * sua fatia, mas mantém-se sempre horizontal. Nunca fica invertido, em
+ * ângulo nenhum, em idioma nenhum.
+ *
+ * O corpo da letra é calculado contra a largura útil da fatia, e é o
+ * ESPANHOL que manda (é ~20% mais longo que o português).
  */
-const RT = 112; // raio onde assenta o bloco de texto
-const CORDA = 2 * RT * Math.sin(Math.PI / N) * 0.86; // pista útil
+const RT = 108;                                       // raio da órbita
+const LARGURA_UTIL = 2 * RT * Math.sin(Math.PI / N) * 0.92;
 
 function corpo(texto: string, maximo: number, largura: number): number {
-  const cabe = CORDA / (Math.max(1, texto.length) * largura);
+  const cabe = LARGURA_UTIL / (Math.max(1, texto.length) * largura);
   // arredondar para BAIXO: para cima, o espanhol transbordava por décimas
   return Math.max(7, Math.min(maximo, Math.floor(cabe * 10) / 10));
 }
@@ -146,13 +151,34 @@ export default function Roleta({
   const ponteiroRef = useRef<SVGSVGElement | null>(null);
   const envolventeRef = useRef<HTMLDivElement | null>(null);
   const [vencedora, setVencedora] = useState(-1);
+  const rotulosRef = useRef<(SVGGElement | null)[]>([]);
+
+  /** coloca cada rótulo no ponto da sua fatia, SEMPRE horizontal */
+  const orbitarRotulos = useCallback((graus: number) => {
+    for (let i = 0; i < N; i++) {
+      const g = rotulosRef.current[i];
+      if (!g) continue;
+      const a = ((graus + i * SEG + SEG / 2 - 90) * Math.PI) / 180;
+      const x = C + RT * Math.cos(a);
+      const y = C + RT * Math.sin(a);
+      g.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+    }
+  }, []);
 
   /** escreve a rotação diretamente no DOM (sem passar pelo React) */
-  const aplicarAngulo = useCallback((graus: number) => {
-    anguloRef.current = graus;
-    const g = fatiasRef.current;
-    if (g) g.style.transform = `rotate(${graus}deg)`;
-  }, []);
+  const aplicarAngulo = useCallback(
+    (graus: number) => {
+      anguloRef.current = graus;
+      const g = fatiasRef.current;
+      if (g) g.style.transform = `rotate(${graus}deg)`;
+      orbitarRotulos(graus); // os rótulos orbitam mas NÃO rodam
+    },
+    [orbitarRotulos]
+  );
+
+  useEffect(() => {
+    orbitarRotulos(anguloRef.current); // posição inicial
+  }, [orbitarRotulos]);
 
   useEffect(() => {
     const cancelar = subscreverStock((s) => {
@@ -490,23 +516,6 @@ export default function Roleta({
               const esgotado = !disponivel(p, stockVisivel);
               const heroi = p.destaque === true && !esgotado;
               const vermelha = i % 2 === 0;
-              const mid = i * SEG + SEG / 2;
-              const fs1 = corpo(p.linha1[idioma], 15, 0.66);
-              const fs2 = p.linha2 ? corpo(p.linha2[idioma], 11.5, 0.62) : 0;
-
-              /* metade inferior (90°–270°): +180° para o texto ficar a
-                 direito. As linhas trocam de posição antes da rotação, para
-                 que depois de rodadas fiquem pela ordem certa. */
-              const virar = mid > 90 && mid < 270;
-              const yc = C - RT;
-              const y1 = virar ? yc + 6 : yc - 6;
-              const y2 = virar ? yc - 9 : yc + 9;
-              const classeCor = esgotado
-                ? " texto-esgotado"
-                : vermelha || heroi
-                ? " texto-branco"
-                : " texto-preto";
-
               return (
                 <g key={p.id}>
                   <path
@@ -525,7 +534,6 @@ export default function Roleta({
                     fill="#e7e3db"
                     className={esgotado ? "veu-esgotado ativo" : "veu-esgotado"}
                   />
-                  {/* HALO: a fatia vencedora pulsa no suspense */}
                   {vencedora === i ? (
                     <path
                       d={caminhoFatia(i)}
@@ -535,45 +543,6 @@ export default function Roleta({
                       strokeWidth="3"
                     />
                   ) : null}
-
-                  <g transform={`rotate(${mid} ${C} ${C})`}>
-                    <g
-                      transform={
-                        virar ? `rotate(180 ${C} ${yc})` : undefined
-                      }
-                    >
-                      {heroi ? (
-                        <text
-                          x={C}
-                          y={virar ? yc + 22 : yc - 22}
-                          textAnchor="middle"
-                          className="fatia-estrela"
-                        >
-                          ★
-                        </text>
-                      ) : null}
-                      <text
-                        x={C}
-                        y={p.linha2 ? y1 : yc + 3}
-                        textAnchor="middle"
-                        style={{ fontSize: fs1 }}
-                        className={"fatia-texto" + classeCor}
-                      >
-                        {p.linha1[idioma]}
-                      </text>
-                      {p.linha2 ? (
-                        <text
-                          x={C}
-                          y={y2}
-                          textAnchor="middle"
-                          style={{ fontSize: fs2 }}
-                          className={"fatia-texto fatia-texto-2" + classeCor}
-                        >
-                          {p.linha2[idioma]}
-                        </text>
-                      ) : null}
-                    </g>
-                  </g>
                 </g>
               );
             })}
@@ -602,6 +571,86 @@ export default function Roleta({
                     stroke="rgba(255,255,255,0.4)"
                     strokeWidth="0.8"
                   />
+                </g>
+              );
+            })}
+          </g>
+
+          {/* ═══ RÓTULOS: camada própria, FORA do disco que roda.
+                 Cada um é reposicionado a cada frame (orbitarRotulos) mas
+                 nunca é rodado - por isso nunca fica de pernas para o ar. */}
+          <g className="rotulos">
+            {PREMIOS.map((p, i) => {
+              const esgotado = !disponivel(p, stockVisivel);
+              const heroi = p.destaque === true && !esgotado;
+              const vermelha = i % 2 === 0;
+              const claro = vermelha || heroi;
+              const fs1 = corpo(p.linha1[idioma], 14, 0.64);
+              const fs2 = p.linha2 ? corpo(p.linha2[idioma], 10.5, 0.6) : 0;
+              const cor = esgotado
+                ? " texto-esgotado"
+                : claro
+                ? " texto-branco"
+                : " texto-preto";
+              return (
+                <g
+                  key={"r" + p.id}
+                  ref={(el) => {
+                    rotulosRef.current[i] = el;
+                  }}
+                >
+                  {heroi ? (
+                    <text
+                      x={0}
+                      y={p.linha2 ? -18 : -14}
+                      textAnchor="middle"
+                      className="fatia-estrela"
+                    >
+                      ★
+                    </text>
+                  ) : null}
+                  <text
+                    x={0}
+                    y={p.linha2 ? -1 : 4}
+                    textAnchor="middle"
+                    style={{ fontSize: fs1 }}
+                    className={"fatia-texto" + cor}
+                  >
+                    {p.linha1[idioma]}
+                  </text>
+
+                  {/* ESGOTADO: a fatia não muda só de cor - é CARIMBADA */}
+                  {esgotado ? (
+                    <g transform="rotate(-11)">
+                      <rect
+                        x={-30}
+                        y={p.linha2 ? 15 : 10}
+                        width={60}
+                        height={13}
+                        rx={2}
+                        className="selo-esgotado-caixa"
+                      />
+                      <text
+                        x={0}
+                        y={p.linha2 ? 24 : 19}
+                        textAnchor="middle"
+                        className="selo-esgotado"
+                      >
+                        {t("esgotado", idioma)}
+                      </text>
+                    </g>
+                  ) : null}
+                  {p.linha2 ? (
+                    <text
+                      x={0}
+                      y={11}
+                      textAnchor="middle"
+                      style={{ fontSize: fs2 }}
+                      className={"fatia-texto fatia-texto-2" + cor}
+                    >
+                      {p.linha2[idioma]}
+                    </text>
+                  ) : null}
                 </g>
               );
             })}

@@ -1,20 +1,17 @@
 "use client";
 
 /**
- * PÁGINA - MOBILE-FIRST, EM FLUXO
- * ---------------------------------
- * O layout anterior foi feito para desktop e espremido à martelada dentro
- * de 100vh, com posicionamento absoluto. Resultado: overflow horizontal em
- * espanhol, selos cortados, mascote por cima do aro da roda.
+ * PÁGINA - sem scroll, sem rodapé, a roda impossível de descentrar
+ * ------------------------------------------------------------------
+ * O que estava errado e porquê:
  *
- * Agora: fluxo normal (flex/grid), tipografia fluida, zero px fixos no
- * layout, e em ecrãs pequenos a página ROLA em vez de comprimir. O absoluto
- * fica só para decoração (o fundo).
- *
- * A MASCOTE TEM CÉLULA PRÓPRIA na grelha do palco - nunca sobrepõe a roda e
- * nunca é escondida. Em mobile fica ao lado do botão GIRAR, a olhar para a
- * roda; em desktop, ao lado da roda. É a mesma marcação nos dois casos: só
- * muda a grelha.
+ * · A RODA DESCENTRADA vinha de a grelha ter de arbitrar entre a mascote e
+ *   a roda. Agora a roda está SOZINHA no fluxo, centrada por um flex - e a
+ *   mascote está ancorada A ELA (posição absoluta dentro do palco da roda).
+ *   Fisicamente não pode descentrar.
+ * · O RODAPÉ foi eliminado. Os selos e o contador passaram a viver no chão
+ *   da cena, sem consumir altura do fluxo.
+ * · SEM SCROLL em lado nenhum: tudo é dimensionado contra 100dvh.
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -22,14 +19,12 @@ import Roleta from "@/components/Roleta";
 import SeletorIdioma from "@/components/SeletorIdioma";
 import ModoMontra from "@/components/ModoMontra";
 import Portal from "@/components/Portal";
-import ContadorPremios from "@/components/ContadorPremios";
-import FaixaSelos from "@/components/FaixaSelos";
 import FundoCartaz from "@/components/FundoCartaz";
 import Bracvs, { type Fase } from "@/components/Bracvs";
 import BotaoSom from "@/components/BotaoSom";
 import { idiomaInicial, t, type Idioma } from "@/lib/i18n";
 import { FACTOS } from "@/lib/factos";
-import { SEGUNDOS_MONTRA, MOSTRAR_SELOS, MOSTRAR_REGRA } from "@/lib/config";
+import { SEGUNDOS_MONTRA, MOSTRAR_REGRA } from "@/lib/config";
 import { useEcraSempreAceso } from "@/lib/useEcraSempreAceso";
 
 export default function Pagina() {
@@ -41,20 +36,16 @@ export default function Pagina() {
 
   useEcraSempreAceso();
 
-  useEffect(() => {
-    setIdioma(idiomaInicial());
-  }, []);
-
+  useEffect(() => setIdioma(idiomaInicial()), []);
   useEffect(() => {
     document.documentElement.lang = idioma;
   }, [idioma]);
 
-  // inatividade → modo montra (e o idioma volta ao da feira)
   useEffect(() => {
-    let temporizador: ReturnType<typeof setTimeout>;
+    let tempo: ReturnType<typeof setTimeout>;
     const rearmar = () => {
-      clearTimeout(temporizador);
-      temporizador = setTimeout(() => {
+      clearTimeout(tempo);
+      tempo = setTimeout(() => {
         if (!ocupada) {
           setMontra(true);
           setIdioma(idiomaInicial());
@@ -71,13 +62,12 @@ export default function Pagina() {
     return () => {
       window.removeEventListener("pointerdown", acordar);
       window.removeEventListener("keydown", acordar);
-      clearTimeout(temporizador);
+      clearTimeout(tempo);
     };
   }, [ocupada]);
 
   const aoOcupada = useCallback((v: boolean) => setOcupada(v), []);
 
-  /* pedir o giro à roda (ela é dona da física e do stock; nós, do botão) */
   const girar = useCallback(() => {
     if (ocupada) return;
     setFacto(Math.floor(Math.random() * FACTOS.length));
@@ -86,8 +76,16 @@ export default function Pagina() {
 
   return (
     <>
-      {/* FUNDO: a fórmula do cartaz (campo + silhuetas gigantes + grão) */}
       <FundoCartaz variante="creme" />
+
+      {/* AURA: um halo vermelho que RESPIRA por trás da roda e se acende
+          durante o giro - a "iluminação teatral" sem custo de performance */}
+      <div className={"aura fase-" + fase} aria-hidden="true" />
+
+      {/* ORNAMENTOS: zigzags do escadório nos cantos, em vez de um rodapé
+          que come altura. Decoram sem ocupar o fluxo. */}
+      <div className="ornamento canto-ne" aria-hidden="true" />
+      <div className="ornamento canto-so" aria-hidden="true" />
 
       <main className={"pagina fase-" + fase}>
         <header className="cabecalho">
@@ -97,27 +95,20 @@ export default function Pagina() {
           <SeletorIdioma idioma={idioma} aoMudar={setIdioma} />
         </header>
 
-        {/* PALCO - estrutura simples e à prova de bala:
-            a roda SEMPRE centrada; por baixo, uma linha com o Bracvs ao lado
-            do botão GIRAR (a olhar para cima, na direção da roda). A mesma
-            disposição em mobile e em desktop - sem media queries a lutar
-            entre si, e sem a roda a fugir para um lado. */}
+        {/* PALCO DA RODA: a roda está sozinha no fluxo (por isso fica sempre
+            centrada) e a mascote está ancorada a ela, do lado esquerdo. */}
         <section className="palco">
-          <div className="celula-roda">
+          <div className="roda-palco">
             <Roleta
               idioma={idioma}
               montra={montra}
               onOcupadaChange={aoOcupada}
               onFase={setFase}
             />
+            <Bracvs fase={fase} />
           </div>
 
-          {/* a mascote é irmã da roda (não vive por baixo dela): em desktop
-              fica AO LADO, o que poupa ~300 px de altura e faz tudo caber
-              sem scroll. Em mobile desce para junto do botão. */}
-          <Bracvs fase={fase} />
-
-          <div className="acao-coluna">
+          <div className="acao">
             {fase === "giro" ? (
               <div className="facto" key={facto}>
                 <span className="facto-rotulo">{t("sabiasQue", idioma)}</span>
@@ -125,11 +116,7 @@ export default function Pagina() {
               </div>
             ) : (
               <>
-                <button
-                  className="botao-girar"
-                  onClick={girar}
-                  disabled={ocupada}
-                >
+                <button className="botao-girar" onClick={girar} disabled={ocupada}>
                   {t("girar", idioma)}
                 </button>
                 {MOSTRAR_REGRA ? (
@@ -140,13 +127,6 @@ export default function Pagina() {
           </div>
         </section>
 
-        <footer className="rodape">
-          <div className="rodape-zig" aria-hidden="true" />
-          <div className="rodape-conteudo">
-            {MOSTRAR_SELOS ? <FaixaSelos idioma={idioma} /> : null}
-            <ContadorPremios idioma={idioma} />
-          </div>
-        </footer>
       </main>
 
       {montra ? (

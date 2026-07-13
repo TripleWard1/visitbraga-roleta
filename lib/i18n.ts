@@ -53,6 +53,7 @@ export const T = {
     es: "Muestra esta pantalla al equipo del stand para recibir tu premio",
     en: "Show this screen to our stand team to collect your prize",
   },
+  esgotado: { pt: "ESGOTADO", es: "AGOTADO", en: "SOLD OUT" },
   entregueManter: {
     pt: "Manter premido…",
     es: "Mantén pulsado…",

@@ -51,10 +51,6 @@ export const IDIOMA_POR_OMISSAO: "pt" | "es" | "en" | null = "es";
  *  Poupa ao staff repetir a mesma frase 400 vezes por dia. */
 export const MOSTRAR_REGRA = true;
 
-/** Selos de prestígio do destino (faixa institucional).
- *  Vendem Braga a quem só veio pelo prémio. Editáveis em lib/selos.ts. */
-export const MOSTRAR_SELOS = true;
-
 /** Opções da pergunta de origem (bandeiras de 1 toque).
  *  O código é a chave guardada nas estatísticas do Firestore. */
 export const ORIGENS: { codigo: string; bandeira: string; nome: string }[] = [
